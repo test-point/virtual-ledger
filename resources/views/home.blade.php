@@ -8,7 +8,7 @@
                 <div class="panel-heading">Dashboard</div>
 
                 <div class="panel-body">
-                    You are logged in!
+                    {{ dump(json_decode(Session::get('user'), true)) }}
                 </div>
             </div>
         </div>
