@@ -45,8 +45,9 @@ class LoginController extends Controller
 
     /**
      * Get the needed authorization credentials from the request.
+     * We using only token for auth
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return array
      */
     protected function credentials(Request $request)
@@ -54,37 +55,44 @@ class LoginController extends Controller
         return $request->only('token');
     }
 
-     protected function validateLogin(Request $request)
+    /**
+     * We using only token for auth
+     * @param Request $request
+     */
+    protected function validateLogin(Request $request)
     {
         $this->validate($request, [
             'token' => 'required'
         ]);
     }
 
+    /**
+     * Reworked auth function - we are using request to api to validate user credentials
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function attemptLogin(Request $request)
     {
-
         $client = new Client();
         $res = $client->request('GET', 'https://dcp.testpoint.io/api/v0/demo_auth', [
-        'headers' => [
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json; indent=4',
-            'Authorization' => 'JWT ' . $request->get('token'),
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json; indent=4',
+                'Authorization' => 'JWT ' . $request->get('token'),
             ]
         ]);
 
 
-        if($res->getStatusCode() == 200){
+        if ($res->getStatusCode() == 200) {
             $result = json_decode($res->getBody(), true);
             $userExist = User::where('name', $result['user'])->first();
-            if(!$userExist){
+            if (!$userExist) {
                 User::create([
                     'name' => $result['user'],
                     'email' => $result['user'],
                     'password' => bcrypt($result['user']),
                 ]);
             }
-
         }
 
         if (Auth::attempt(['name' => $result['user'], 'password' => $result['user']])) {
