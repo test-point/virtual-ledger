@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\User;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
+use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\ValidationData;
 
 class LoginController extends Controller
 {
@@ -73,31 +74,28 @@ class LoginController extends Controller
      */
     public function attemptLogin(Request $request)
     {
-        $client = new Client();
-        $res = $client->request('GET', 'https://dcp.testpoint.io/api/v0/demo_auth', [
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json; indent=4',
-                'Authorization' => 'JWT ' . $request->get('token'),
-            ]
-        ]);
+        $token = (new Parser())->parse((string) $request->get('token'));
 
+        $data = new ValidationData();
+        $data->setIssuer($token->getClaim('iss'));
+        $data->setAudience($token->getClaim('aud'));
 
-        if ($res->getStatusCode() == 200) {
-            $result = json_decode($res->getBody(), true);
-            $userExist = User::where('name', $result['user'])->first();
+        if ($token->validate($data)) {
+
+            $userExist = User::where('name', $token->getClaim('abn'))->first();
             if (!$userExist) {
                 User::create([
-                    'name' => $result['user'],
-                    'email' => $result['user'],
-                    'password' => bcrypt($result['user']),
+                    'name' => $token->getClaim('abn'),
+                    'email' => $token->getClaim('abn'),
+                    'password' => bcrypt($token->getClaim('abn')),
                 ]);
             }
-        }
 
-        if (Auth::attempt(['name' => $result['user'], 'password' => $result['user']])) {
-            Session::put('user', json_encode($result));
-            return redirect()->intended('dashboard');
+            if (Auth::attempt(['name' => $token->getClaim('abn'), 'password' => $token->getClaim('abn')])) {
+                Session::put('user', json_encode($token->getClaims()));
+                Session::put('token', $request->get('token'));
+                return redirect()->intended('dashboard');
+            }
         }
     }
 
