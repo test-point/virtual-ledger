@@ -22,3 +22,21 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'remember_token' => str_random(10),
     ];
 });
+
+
+$factory->define(App\Transaction::class, function (Faker\Generator $faker) {
+
+    return [
+        'from_party' => $faker->name,
+        'to_party' => $faker->name,
+        'user_id' => \App\User::first()->id,
+        'message_hash' => str_random(5),
+        'encripted_payload' => bcrypt(str_random(10)),
+        'decripted_payload' => bcrypt(str_random(10)),
+        'notarized_message' => $faker->sentence,
+        'message_type' => str_random(10),
+        'schema' => str_random(10),
+        'validation_status' => $faker->word,
+        'validation_message' => $faker->sentence,
+    ];
+});

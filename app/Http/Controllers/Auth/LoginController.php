@@ -32,12 +32,10 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/transactions';
 
     /**
-     * Create a new controller instance.
-     *
-     * @return void
+     * LoginController constructor.
      */
     public function __construct()
     {
@@ -74,7 +72,7 @@ class LoginController extends Controller
      */
     public function attemptLogin(Request $request)
     {
-        $token = (new Parser())->parse((string) $request->get('token'));
+        $token = (new Parser())->parse((string)$request->get('token'));
 
         $data = new ValidationData();
         $data->setIssuer($token->getClaim('iss'));
