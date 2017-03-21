@@ -91,7 +91,15 @@ class LoginController extends Controller
 
             if (Auth::attempt(['name' => $token->getClaim('abn'), 'password' => $token->getClaim('abn')])) {
                 Session::put('user', json_encode($token->getClaims()));
+                Session::put('abn', $token->getClaim('abn'));
                 Session::put('token', $request->get('token'));
+                $tokenData = $token->getClaims();
+                $tokenData = reset($tokenData);
+                $userUrn = $tokenData->getName();
+                foreach((array) $tokenData->getValue()[0] as $k1 => $v1) {
+                    $userUrn .= ':' . $k1 . '::' . $v1;
+                }
+                Session::put('user_urn', $userUrn);
                 return redirect()->intended('dashboard');
             }
         }

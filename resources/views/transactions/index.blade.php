@@ -5,6 +5,13 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
+                    <div class="panel-heading">Add new transaction</div>
+
+                    <div class="panel-body">
+                        @include('transactions.create')
+
+                    </div>
+
                     <div class="panel-heading">Transactions</div>
 
                     <div class="panel-body">
