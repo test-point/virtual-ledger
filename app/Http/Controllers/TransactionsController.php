@@ -35,10 +35,9 @@ class TransactionsController extends Controller
         /**
          * Generate keys for current user
          */
-//        $this->runConsoleCommand('sudo rngd -r /dev/urandom');
 
         $this->runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . session('user_urn'));
-        $this->runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . $request->get('receiver_abn'));
+        $this->runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
         $transaction = Auth::user()->transactions()->create([
             'from_party' => session('abn'),
