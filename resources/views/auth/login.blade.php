@@ -14,9 +14,7 @@
                                 <label for="email" class="col-md-4 control-label">Your token</label>
 
                                 <div class="col-md-6">
-                                    <textarea id="token" type="token" class="form-control" name="token" value="{{ old('token') }}" required autofocus>
-                                        eyJhbGciOiJSUzI1NiIsImtpZCI6ImFkZDkwZTg0YjVlY2ZlZWFkZDYwMmU0ZGQ3MTA4M2M4In0.eyJ1cm46b2FzaXM6bmFtZXM6dGM6ZWJjb3JlOnBhcnR5aWQtdHlwZTppc282NTIzIjpbeyIwMTUxIjoiMTIzMTIzMTIzIn1dLCJzdWIiOiIzOCIsImlzcyI6Imh0dHBzOi8vaWRwLnRlc3Rwb2ludC5pbyIsImFibiI6MTIzMTIzMTIzLCJhdF9oYXNoIjoiOXdLdUkyV1BDc1lxajRKT2lCWkwyUSIsImV4cCI6MTQ5MDE4NDY4NSwiYXV0aF90aW1lIjoxNDg5NzYwMDE4LCJpYXQiOjE0ODk4MjQ2ODUsImF1ZCI6IjQzMDU0NiJ9.acVAB18StVfGuzzAuC72QWbfZ2vqq9xQ1NYCjrJ6SihtV7BNecHBSQ28JBTxKPaeT51JPKGKXw_c6PfxkEG_lzbEFp-7_7LnyOVeaOE_XpDeumVGRcZZkule34BUz8FWWNNDVG8kkriuuDVQbreukfk9t7Jc-qBoBw3PQriqFuk
-                                    </textarea>
+                                    <textarea id="token" type="token" class="form-control" name="token" value="{{ old('token') }}" required autofocus>eyJhbGciOiJSUzI1NiIsImtpZCI6ImFkZDkwZTg0YjVlY2ZlZWFkZDYwMmU0ZGQ3MTA4M2M4In0.eyJ1cm46b2FzaXM6bmFtZXM6dGM6ZWJjb3JlOnBhcnR5aWQtdHlwZTppc282NTIzIjpbeyIwMTUxIjoiMTIzMTIzMTIzIn1dLCJzdWIiOiIzOCIsImlzcyI6Imh0dHBzOi8vaWRwLnRlc3Rwb2ludC5pbyIsImFibiI6MTIzMTIzMTIzLCJhdF9oYXNoIjoiWGtzQ285V1FnaUhrOUFQS05Bem5EZyIsImV4cCI6MTQ5MDYxMDI1MCwiYXV0aF90aW1lIjoxNDkwMTE1MTg0LCJpYXQiOjE0OTAyNTAyNTAsImF1ZCI6IjQzMDU0NiJ9.k7LaYI65qYHCiUjq_wo_qu5SsqQbfxHKYzuByi7CtvWcOw3r8M3u0WDRNwo8luJFgxvV-KM1M6TbXXen7Aik6ROAHN9nA4NlqqIjGq7luWNiACPvciWEiRwUXpBanvH7C7lmZcFm37amBf5GSO5eaQQWGSGABOVvLbw5Pp4qFT8</textarea>
 
                                     @if ($errors->has('token'))
                                         <span class="help-block">

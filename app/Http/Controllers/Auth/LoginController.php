@@ -82,14 +82,18 @@ class LoginController extends Controller
 
             $userExist = User::where('name', $token->getClaim('abn'))->first();
             if (!$userExist) {
+                //create new customer for user
+                $partisipantsIds = $token->getClaim('urn:oasis:names:tc:ebcore:partyid-type:iso6523');
+                $newCustomerData = ((new \ApiRequest())->createNewCustomer($partisipantsIds));
                 User::create([
                     'name' => $token->getClaim('abn'),
                     'email' => $token->getClaim('abn'),
+                    'customer_id' => $newCustomerData['uuid'],
                     'password' => bcrypt($token->getClaim('abn')),
                 ]);
             }
-
             if (Auth::attempt(['name' => $token->getClaim('abn'), 'password' => $token->getClaim('abn')])) {
+
                 Session::put('user', json_encode($token->getClaims()));
                 Session::put('abn', $token->getClaim('abn'));
                 Session::put('token', $request->get('token'));

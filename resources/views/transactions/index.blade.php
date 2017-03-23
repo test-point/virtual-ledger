@@ -33,15 +33,20 @@
                                         <td>{{ $transaction->id }}</td>
                                         <td>{{ $transaction->from_party }}</td>
                                         <td>{{ $transaction->to_party }}</td>
-                                        <td>{{ $transaction->message_hash }}</td>
+                                        <td><span title="{{ $transaction->message_hash }}">{{ substr($transaction->message_hash, 0, 10) }}</span></td>
                                         <td>
-                                            <a href="{{ $transaction->encrypted_payload }}" target="_blank">Encrypted</a>
+                                            <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
                                             <br>
-                                            <a href="{{ $transaction->decrypted_payload }}" target="_blank">Decrypted</a>
+                                            <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
                                         </td>
                                         <td>{{ $transaction->notarized_message }}</td>
                                         <td>{{ $transaction->message_type }}</td>
-                                        <td>{{ $transaction->validation_status }}</td>
+                                        <td>
+                                            <span>{{ $transaction->validation_status }}</span>
+                                            @if($transaction->validation_status == 'error')
+                                                <br>({{ $transaction->validation_message }})
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             @else

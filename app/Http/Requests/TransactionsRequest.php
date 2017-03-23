@@ -26,7 +26,8 @@ class TransactionsRequest extends FormRequest
     {
         $rules = [
             'receiver_abn' => 'required',
-            'document' => 'required',
+            'document' => 'required|json',
+            'endpoint' => 'required',
         ];
 
         return $rules;
