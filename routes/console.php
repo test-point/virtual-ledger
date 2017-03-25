@@ -17,8 +17,8 @@ use Illuminate\Foundation\Inspiring;
     $apiRequest = new \ApiRequest();
     $transactions = \App\Transaction::where('validation_status', 'processing')->get();
     foreach ($transactions as $transaction) {
-        $messageData = $apiRequest->getMessage($transaction['validation_status']);
-        if($transaction['validation_status'] != 'processing') {
+        $messageData = $apiRequest->getMessage($transaction->message_id);
+        if($messageData['data']['attributes']['status'] != 'processing') {
             $transaction->validation_status = $messageData['data']['attributes']['status'];
             $transaction->validation_message = @$messageData['data']['attributes']['error'];
             $transaction->save();
