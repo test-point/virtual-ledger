@@ -26,19 +26,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-            error_log('cron');
-            $apiRequest = new \ApiRequest();
-            $transactions = Transaction::where('status', 'processing')->get();
-            foreach ($transactions as $transaction) {
-                $messageData = $apiRequest->getMessage($transaction['validation_status']);
-                if($transaction['validation_status'] != 'processing') {
-                    $transaction->validation_status = $messageData['data']['attributes']['status'];
-                    $transaction->validation_message = @$messageData['data']['attributes']['error'];
-                    $transaction->save();
-                }
-            }
-        })->cron('*/5 * * * * *');
     }
 
     /**

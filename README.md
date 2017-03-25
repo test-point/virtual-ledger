@@ -3,7 +3,7 @@ repo for a php application that will act as a virtual ledger, using the testpoin
 
 Set up cronjob:
 
-*/5 * * * * php /var/www/virtual-ledger-a schedule:run >> /dev/null 2>&1
+* * * * * for i in 0 1 2 3 4 5 6 7 8 9 10 11; do php /var/www/virtual-ledger/artisan transactions & sleep 5; done; php /var/www/virtual-ledger/artisan transactions
 
 Dependencies:
 

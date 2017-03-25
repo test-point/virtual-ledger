@@ -13,6 +13,15 @@ use Illuminate\Foundation\Inspiring;
 |
 */
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->describe('Display an inspiring quote');
+\Illuminate\Support\Facades\Artisan::command('transactions', function () {
+    $apiRequest = new \ApiRequest();
+    $transactions = \App\Transaction::where('validation_status', 'processing')->get();
+    foreach ($transactions as $transaction) {
+        $messageData = $apiRequest->getMessage($transaction['validation_status']);
+        if($transaction['validation_status'] != 'processing') {
+            $transaction->validation_status = $messageData['data']['attributes']['status'];
+            $transaction->validation_message = @$messageData['data']['attributes']['error'];
+            $transaction->save();
+        }
+    }
+})->describe('Update processing transactions');
