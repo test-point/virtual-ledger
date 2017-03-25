@@ -16,14 +16,13 @@
 
                     <div class="panel-body">
 
-                        <table class="table table-stripped">
+                        <table class="table table-stripped text-center">
                             <tr>
                                 <td>Timestamp</td>
                                 <td>From</td>
                                 <td>To</td>
                                 <td>Message Hash</td>
                                 <td>Payloads</td>
-                                <td>Message</td>
                                 <td>Message Type</td>
                                 <td>Validation Status</td>
                             </tr>
@@ -39,7 +38,6 @@
                                             <br>
                                             <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
                                         </td>
-                                        <td>{{ $transaction->notarized_message }}</td>
                                         <td>{{ $transaction->message_type }}</td>
                                         <td>
                                             <span>{{ $transaction->validation_status }}</span>
