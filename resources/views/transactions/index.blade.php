@@ -18,7 +18,7 @@
 
                         <table class="table table-stripped">
                             <tr>
-                                <td>ID</td>
+                                <td>Timestamp</td>
                                 <td>From</td>
                                 <td>To</td>
                                 <td>Message Hash</td>
@@ -31,6 +31,7 @@
                                 @foreach($transactions as $transaction)
                                     <tr>
                                         <td>{{ $transaction->id }}</td>
+                                        <td>{{ $transaction->created_at }}</td>
                                         <td>{{ $transaction->from_party }}</td>
                                         <td>{{ $transaction->to_party }}</td>
                                         <td><span title="{{ $transaction->message_hash }}">{{ substr($transaction->message_hash, 0, 10) }}</span></td>

@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TransactionsRequest;
-use App\Transaction;
-use Collective\Remote\RemoteFacade;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
@@ -99,7 +96,7 @@ class TransactionsController extends Controller
         $transaction->decripted_payload = $transaction->id.'_signed_file.json';
 
         //todo make backgroud task to update messages with processing status
-        sleep(5);
+        sleep(10);
         $messageData = $apiRequest->getMessage($apiResponse['data']['id']);
 
         $transaction->validation_status = $messageData['data']['attributes']['status'];

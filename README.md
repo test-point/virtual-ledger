@@ -1,14 +1,12 @@
 # virtual-ledger
 repo for a php application that will act as a virtual ledger, using the testpoint services.
 
-Start container:
-cd laradoc && sudo docker-compose up -d nginx mysql
+Dependencies:
 
-sudo docker ps
-sudo docker exec -it ba49784348da bash
-
-pip install virtualenv
-
-18c2b0ab927d8a3c9bf9ef78419a8f6d4535e47f
-
+1) gnupg2
+sudo apt-get install gnupg2 -y
+ 
+2) rng-tools
 sudo apt-get install rng-tools
+vi /etc/default/rng-tools
+and add the line HRNGDEVICE=/dev/urandom:
