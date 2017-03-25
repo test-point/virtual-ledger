@@ -95,12 +95,7 @@ class TransactionsController extends Controller
         $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
         $transaction->decripted_payload = $transaction->id.'_signed_file.json';
 
-        //todo make backgroud task to update messages with processing status
-        sleep(10);
-        $messageData = $apiRequest->getMessage($apiResponse['data']['id']);
-
-        $transaction->validation_status = $messageData['data']['attributes']['status'];
-        $transaction->validation_message = @$messageData['data']['attributes']['error'];
+        $transaction->validation_status = $apiResponse['data']['attributes']['status'];
         $transaction->save();
 
         return redirect('transactions');
