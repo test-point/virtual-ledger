@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Transaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Process;
@@ -17,7 +18,7 @@ class TransactionsController extends Controller
      */
     public function index()
     {
-        $transactions = Auth::user()->transactions()->orderby('id', 'desc')->paginate(5);
+        $transactions = Transaction::where('from_party', session('abn'))->orWhere('to_party', session('abn'))->orderby('id', 'desc')->paginate(5);
         return view('transactions.index', compact('transactions'));
     }
 
