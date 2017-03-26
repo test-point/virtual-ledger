@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\TransactionsRequest;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use App\Http\Requests\TransactionsRequest;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class TransactionsController extends Controller
 {

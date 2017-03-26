@@ -35,7 +35,5 @@
 
     <div class="filter-box-footer">
         <button type="submit" class="btn btn-success btn-with-icon btn-confirm">Confirm</button>
-        &nbsp;&nbsp;
-        <button type="button" class="btn btn-default btn-with-icon btn-clear">Clear</button>
     </div>
 </form>

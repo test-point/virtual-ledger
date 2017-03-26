@@ -100,7 +100,7 @@ class LoginController extends Controller
                 $tokenData = $token->getClaims();
                 $tokenData = reset($tokenData);
                 $userUrn = $tokenData->getName();
-                foreach((array) $tokenData->getValue()[0] as $k1 => $v1) {
+                foreach ((array)$tokenData->getValue()[0] as $k1 => $v1) {
                     $userUrn .= ':' . $k1 . '::' . $v1;
                 }
                 Session::put('user_urn', $userUrn);
