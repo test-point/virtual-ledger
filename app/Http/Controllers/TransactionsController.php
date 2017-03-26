@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Process;
 use App\Http\Requests\TransactionsRequest;
@@ -119,7 +120,7 @@ class TransactionsController extends Controller
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {
-            echo '<pre>' . print_r($e->getMessage(), 1) . '</pre>';
+            Log::debug('Console command error: ' . $e->getMessage());
         }
     }
 }
