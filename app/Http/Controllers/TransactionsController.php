@@ -11,7 +11,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class TransactionsController extends Controller
 {
-     /**
+    /**
      * Show user's transactions.
      *
      * @return \Illuminate\Http\Response
@@ -35,8 +35,8 @@ class TransactionsController extends Controller
          * Generate keys for current user
          */
 
-        $this->runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . session('user_urn'));
-        $this->runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
+        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . session('user_urn'));
+        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
         $transaction = Auth::user()->transactions()->create([
             'from_party' => session('abn'),
@@ -44,14 +44,14 @@ class TransactionsController extends Controller
         ]);
 
         //save json to file
-        file_put_contents(resource_path('data/documents/'.$transaction->id.'_initial_message.json'), $request->get('document'));
+        file_put_contents(resource_path('data/documents/' . $transaction->id . '_initial_message.json'), $request->get('document'));
 
         // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
-        $this->runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_'.session('abn').'.key'));
+        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
 
-        $this->runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/'.session('abn').'_fingerprint.key'));
+        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/' . session('abn') . '_fingerprint.key'));
 
-        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/'.session('abn').'_fingerprint.key')))[1])[0]);
+        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . session('abn') . '_fingerprint.key')))[1])[0]);
         $apiRequest = new \ApiRequest();
         $token = $apiRequest->getNewTokenForCustomer(Auth::user()->customer_id);
         $apiRequest->sendSenderPublicKey(session('abn'), $fingerprint, $token['id_token']);
@@ -61,41 +61,41 @@ class TransactionsController extends Controller
         file_put_contents(resource_path() . '/data/keys/receiver_' . $request->get('receiver_abn') . '.key', $receiverPublicKey);
 
 
-        $this->runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::'.session('abn').'" \
-                        --output "'.resource_path('data/keys/'.$transaction->id.'_signed_file.json').'" \
-                        --clearsign "'.resource_path('data/documents/'.$transaction->id.'_initial_message.json') . '"'
+        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" \
+                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
+                        --clearsign "' . resource_path('data/documents/' . $transaction->id . '_initial_message.json') . '"'
         );
 
-        $this->runConsoleCommand('gpg2 --verify '. resource_path('data/keys/'.$transaction->id.'_signed_file.json'));
+        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
-        $this->runConsoleCommand('openssl dgst -sha256 -out "'.resource_path('data/keys/'.$transaction->id.'_signed_file.hash').'" "'.resource_path('data/keys/'.$transaction->id.'_signed_file.json').'"');
+        runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
 
-        $this->runConsoleCommand('gpg2 --armour --output "'.resource_path('data/keys/'.$transaction->id . '_cyphertext_signed.gpg').'" --encrypt \
-          --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::'.$request->get('receiver_abn').'" '.
-          resource_path('data/keys/'.$transaction->id.'_signed_file.json'));
+        runConsoleCommand('gpg2 --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
+          --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn') . '" ' .
+            resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
-        $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/'.$transaction->id.'_signed_file.hash')))[1]);
+        $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.hash')))[1]);
         $message = [
-            'cyphertext'=> file_get_contents(resource_path('data/keys/'.$transaction->id . '_cyphertext_signed.gpg')),
-            'hash'=> $hash,
-            'reference' =>  "",
+            'cyphertext' => file_get_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg')),
+            'hash' => $hash,
+            'reference' => "",
             'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . session('abn')
         ];
 
-        file_put_contents(resource_path('data/keys/'.$transaction->id.'_message.json'), json_encode($message, JSON_PRETTY_PRINT));
+        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($message, JSON_PRETTY_PRINT));
 
-        $this->runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::'.session('abn').'" --output '.resource_path('data/keys/'.$transaction->id.'_message.json.sig').' --detach-sign '.resource_path('data/keys/'.$transaction->id.'_message.json'));
+        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
 
         $apiResponse = $apiRequest->sendMessage($request->get('endpoint'),
-            resource_path('data/keys/'.$transaction->id.'_message.json'),
-            resource_path('data/keys/'.$transaction->id.'_message.json.sig')
+            resource_path('data/keys/' . $transaction->id . '_message.json'),
+            resource_path('data/keys/' . $transaction->id . '_message.json.sig')
         );
 
         $transaction->message_hash = $hash;
         $transaction->message_id = $apiResponse['data']['id'];
         $transaction->message_type = $apiResponse['data']['type'];
         $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
-        $transaction->decripted_payload = $transaction->id.'_signed_file.json';
+        $transaction->decripted_payload = $transaction->id . '_signed_file.json';
 
         $transaction->validation_status = $apiResponse['data']['attributes']['status'];
         $transaction->save();
@@ -113,15 +113,5 @@ class TransactionsController extends Controller
     public function download($filename)
     {
         return response()->download(resource_path('data/keys/' . $filename), $filename);
-    }
-
-    private function runConsoleCommand($cmd)
-    {
-        $process = new Process($cmd, null, null, null, 3600);
-        try {
-            $process->mustRun();
-        } catch (ProcessFailedException $e) {
-            Log::debug('Console command error: ' . $e->getMessage());
-        }
     }
 }

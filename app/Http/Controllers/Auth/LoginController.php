@@ -75,7 +75,7 @@ class LoginController extends Controller
         $token = (new Parser())->parse((string)$request->get('token'));
 
         $data = new ValidationData();
-        $data->setIssuer($token->getClaim('iss'));
+        $data->setIssuer('https://idp.testpoint.io');
         $data->setAudience($token->getClaim('aud'));
 
         if ($token->validate($data)) {
