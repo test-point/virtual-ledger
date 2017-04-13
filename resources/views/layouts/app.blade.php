@@ -89,6 +89,12 @@
                     </ul>
                 </div>
             @endif
+            @if(Session::has('status'))
+                <div class="alert alert-success alert-dismissable">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    {{ Session::get('status') }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -115,8 +121,12 @@
     </div>
 </div>
 
+<script src="//code.jquery.com/jquery-2.2.4.js"
+        integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+        crossorigin="anonymous"></script>
 
 @yield('additional_js')
+
 <script src="{{ asset('js/app.js') }}"></script>
 
 </body>

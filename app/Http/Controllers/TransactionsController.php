@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Transaction;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Process;
@@ -16,10 +17,37 @@ class TransactionsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::where('from_party', session('abn'))->orWhere('to_party', session('abn'))->orderby('id', 'desc')->paginate(5);
-        return view('transactions.index', compact('transactions'));
+        $documentIds = $endpoints = false;
+        $transactions = Transaction::where('from_party', session('abn'))->orWhere('to_party', session('abn'))->orderby('id', 'desc')->paginate(25);
+        return view('transactions.index', compact('transactions', 'endpoints', 'documentIds', 'request'));
+    }
+
+    /**
+     * Render filters view
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function filters(Request $request)
+    {
+        $apiRequest = new \ApiRequest();
+        $documentIds = $endpoints = false;
+        if ($request->get('receiver_abn') && !$request->get('document_id')) {
+            $documentIds = $apiRequest->getDocumentIds($request->get('receiver_abn'));
+            session()->put('documentIds', $documentIds);
+        }
+        if ($request->get('receiver_abn') && $request->get('document_id')) {
+            $endpoints = $apiRequest->getEndpoints($request->get('receiver_abn'), $request->get('document_id'));
+            $documentIds = session('documentIds');
+            session()->put('endpoints', $documentIds);
+        }
+        $data = [
+            'endpoints' => $endpoints,
+            'documentIds' => $documentIds,
+            'request' => $request
+        ];
+        return response()->json(['html' => view('transactions.create')->with($data)->render()]);
     }
 
     /**
@@ -100,7 +128,11 @@ class TransactionsController extends Controller
         $transaction->validation_status = $apiResponse['data']['attributes']['status'];
         $transaction->save();
 
-        return redirect('transactions');
+        session()->forget('documentIds');
+        session()->forget('endpoints');
+        session()->flash('status', 'Message has been sent!');
+
+        return response()->json(['status' => 'success']);
     }
 
     /**

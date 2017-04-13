@@ -7,7 +7,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Add new transaction</div>
 
-                    <div class="panel-body">
+                    <div class="panel-body" id="filters">
                         @include('transactions.create')
 
                     </div>
@@ -65,16 +65,50 @@
     </div>
 @endsection
 @section('additional_js')
-    <script src="//code.jquery.com/jquery-2.2.4.js"
-            integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
-            crossorigin="anonymous"></script>
     <script>
         jQuery(document).ready(function () {
-            jQuery('.btn-confirm').on('click', function (e) {
+            jQuery(document).on('submit', '#transactionSearchFilterByForm', function (e) {
+                e.preventDefault();
                 jQuery('#loadingModal').modal({
                     backdrop: 'static',
                     keyboard: false
                 });
+                $('.has-error').removeClass('has-error');
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: '/transactions',
+                    data: $('#transactionSearchFilterByForm').serialize(),
+                    success: function (data) {
+                        jQuery('#loadingModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function (response) {
+                        response = $.parseJSON(response.responseText);
+                        $.each(response, function (index, elem) {
+                            $('#' + index).closest('.form-group').addClass('has-error');
+                        })
+                        jQuery('#loadingModal').modal('hide');
+                    }
+                })
+            });
+        });
+        jQuery(document).ready(function () {
+            jQuery(document).on('change', '#receiver_abn, #document_id', function (e) {
+                jQuery('#loadingModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                $.ajax({
+                    type: 'get',
+                    dataType: 'json',
+                    url: '/transactions/filters',
+                    data: $('#transactionSearchFilterByForm').serialize(),
+                    success: function (data) {
+                        $('#filters').html(data.html);
+                        jQuery('#loadingModal').modal('hide');
+                    }
+                })
             });
         });
     </script>

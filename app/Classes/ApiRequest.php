@@ -92,7 +92,7 @@ class ApiRequest
                 ],
             ]
         ];
-        return $this->makeRequest('POST', $this->getMessagesEndpoint($endpoint), $data, false);
+        return $this->makeRequest('POST', $endpoint, $data, false);
     }
 
     /**
@@ -196,5 +196,23 @@ class ApiRequest
             ]
         ];
         return $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
+    }
+
+    public function getDocumentIds($abn)
+    {
+        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '?format=json');
+        return $data['ServiceMetadataReferenceCollection'];
+    }
+
+    public function getEndpoints($abn, $documentId)
+    {
+        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . $documentId . '?format=json');
+        $result = array_map(function ($item) {
+            return array_map(function ($item) {
+                return $item['EndpointURI'];
+            }, $item['ServiceEndpointList']);
+        }, $data['ProcessList']);
+        //multidimensional array to one-dimensional array
+        return array_reduce($result, 'array_merge', array());
     }
 }
