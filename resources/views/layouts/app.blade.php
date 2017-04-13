@@ -74,18 +74,50 @@
                     @endif
                 </ul>
             </div>
-            <div class="row">
-                @if ($errors->any())
-                    <div class="alert alert-danger">{{ $errors->first() }}</div>
-                @endif
-            </div>
+
         </div>
     </nav>
+
+    <div class="container">
+        <div class="row">
+            @if (count($errors) > 0)
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
+    </div>
 
     @yield('content')
 </div>
 
 <!-- Scripts -->
+
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Processing...</h4>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@yield('additional_js')
 <script src="{{ asset('js/app.js') }}"></script>
+
 </body>
 </html>

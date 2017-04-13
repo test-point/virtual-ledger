@@ -32,7 +32,9 @@
                                         <td>{{ $transaction->created_at }}</td>
                                         <td>{{ $transaction->from_party }}</td>
                                         <td>{{ $transaction->to_party }}</td>
-                                        <td><span title="{{ $transaction->message_hash }}">{{ substr($transaction->message_hash, 0, 10) }}</span></td>
+                                        <td>
+                                            <span title="{{ $transaction->message_hash }}">{{ substr($transaction->message_hash, 0, 10) }}</span>
+                                        </td>
                                         <td>
                                             <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
                                             <br>
@@ -61,4 +63,19 @@
             </div>
         </div>
     </div>
+@endsection
+@section('additional_js')
+    <script src="//code.jquery.com/jquery-2.2.4.js"
+            integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+            crossorigin="anonymous"></script>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery('.btn-confirm').on('click', function (e) {
+                jQuery('#loadingModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            });
+        });
+    </script>
 @endsection
