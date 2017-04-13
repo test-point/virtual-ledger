@@ -207,9 +207,12 @@ class ApiRequest
     public function getEndpoints($abn, $documentId)
     {
         $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . $documentId . '?format=json');
+        if(!$data){
+            return false;
+        }
         $result = array_map(function ($item) {
-            return array_map(function ($item) {
-                return $item['EndpointURI'];
+            return array_map(function ($item1) {
+                return $item1['EndpointURI'];
             }, $item['ServiceEndpointList']);
         }, $data['ProcessList']);
         //multidimensional array to one-dimensional array
