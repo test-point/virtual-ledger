@@ -31,7 +31,8 @@
                 <option value="">- Choose endpoint -</option>
                 @if($endpoints)
                     @foreach($endpoints as $endpoint)
-                        <option value="{{ $endpoint }}" @if($endpoint == $request->get('endpoint')) selected="selected"@endif>{{ $endpoint }}</option>
+                        <?php $endpoint1 = explode(' - ', $endpoint);?>
+                        <option value="{{ end($endpoint1) }}" @if($endpoint == $request->get('endpoint')) selected="selected"@endif>{{ $endpoint }}</option>
                     @endforeach
                 @endif
             </select>

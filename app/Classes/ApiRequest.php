@@ -211,8 +211,8 @@ class ApiRequest
             return false;
         }
         $result = array_map(function ($item) {
-            return array_map(function ($item1) {
-                return $item1['EndpointURI'];
+            return array_map(function ($item1) use ($item) {
+                return implode(':', $item['ProcessIdentifier']) . ' - ' . $item1['EndpointURI'];
             }, $item['ServiceEndpointList']);
         }, $data['ProcessList']);
         //multidimensional array to one-dimensional array

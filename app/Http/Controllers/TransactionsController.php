@@ -36,11 +36,17 @@ class TransactionsController extends Controller
         if ($request->get('receiver_abn') && !$request->get('document_id')) {
             $documentIds = $apiRequest->getDocumentIds($request->get('receiver_abn'));
             session()->put('documentIds', $documentIds);
+            if(count($documentIds) === 1){
+                $request->merge( [ 'document_id' => array_first($documentIds) ] );
+            }
         }
         if ($request->get('receiver_abn') && $request->get('document_id')) {
             $endpoints = $apiRequest->getEndpoints($request->get('receiver_abn'), $request->get('document_id'));
             $documentIds = session('documentIds');
             session()->put('endpoints', $documentIds);
+            if(count($endpoints) === 1){
+                $request->merge( [ 'endpoint' => array_first($endpoints) ] );
+            }
         }
         $data = [
             'endpoints' => $endpoints,
