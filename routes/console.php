@@ -15,7 +15,7 @@ use Illuminate\Foundation\Inspiring;
 
 \Illuminate\Support\Facades\Artisan::command('transactions', function () {
     $apiRequest = new \ApiRequest();
-    $transactions = \App\Transaction::where('validation_status', 'processing')->get();
+    $transactions = \App\Transaction::whereIn('validation_status', ['processing', 'in_transit'])->get();
     foreach ($transactions as $transaction) {
         $messageData = $apiRequest->getMessage($transaction->message_id);
         if($messageData['data']['attributes']['status'] != 'processing') {
