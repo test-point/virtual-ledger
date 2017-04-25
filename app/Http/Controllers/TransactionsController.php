@@ -78,7 +78,7 @@ class TransactionsController extends Controller
         ]);
 
         //save json to file
-        file_put_contents(resource_path('data/documents/' . $transaction->id . '_initial_message.json'), $request->get('document'));
+        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $request->get('document'));
 
         // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
         runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
@@ -97,7 +97,7 @@ class TransactionsController extends Controller
 
         runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" \
                         --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
-                        --clearsign "' . resource_path('data/documents/' . $transaction->id . '_initial_message.json') . '"'
+                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
         );
 
         runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
@@ -129,7 +129,7 @@ class TransactionsController extends Controller
         $transaction->message_id = $apiResponse['data']['id'];
         $transaction->message_type = $apiResponse['data']['type'];
         $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
-        $transaction->decripted_payload = $transaction->id . '_signed_file.json';
+        $transaction->decripted_payload = $transaction->id . '_initial_message.json';
 
         $transaction->validation_status = $apiResponse['data']['attributes']['status'];
         $transaction->save();
