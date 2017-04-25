@@ -72,7 +72,11 @@ class LoginController extends Controller
      */
     public function attemptLogin(Request $request)
     {
-        $token = (new Parser())->parse((string)$request->get('token'));
+        try {
+            $token = (new Parser())->parse((string)$request->get('token'));
+        } catch (\Exception $e){
+            return false;
+        }
 
         $data = new ValidationData();
         $data->setIssuer('https://idp.testpoint.io');
