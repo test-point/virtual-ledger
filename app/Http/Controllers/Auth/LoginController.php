@@ -89,9 +89,11 @@ class LoginController extends Controller
                 //create new customer for user
                 $partisipantsIds = $token->getClaim('urn:oasis:names:tc:ebcore:partyid-type:iso6523');
                 $newCustomerData = ((new \ApiRequest())->createNewCustomer($partisipantsIds));
+                $abnData = \CompanyBookAPI::searchByAbn($token->getClaim('abn'));
                 User::create([
                     'name' => $token->getClaim('abn'),
                     'email' => $token->getClaim('abn'),
+                    'abn_name' => $abnData['attributes']['extra_data']['name'] ?? '',
                     'customer_id' => $newCustomerData['uuid'],
                     'password' => bcrypt($token->getClaim('abn')),
                 ]);

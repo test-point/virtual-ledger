@@ -1,11 +1,15 @@
 @extends('layouts.app')
 
+@section('abn_name')
+    @if(Auth::user()->abn_name) for "{{ Auth::user()->abn_name }}" @endif
+@endsection
+
 @section('content')
     <div class="container">
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">Add new transaction</div>
+                    <div class="panel-heading">Add new transaction (This is TEST account only)</div>
 
                     <div class="panel-body" id="filters">
                         @include('transactions.create')
