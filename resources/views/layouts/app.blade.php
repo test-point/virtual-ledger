@@ -36,8 +36,9 @@
 
                 <!-- Branding Image -->
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }} @yield('abn_name')
+                    {{ config('app.name', 'Laravel') }}
                 </a>
+                 @yield('abn_name')
             </div>
 
             <div class="collapse navbar-collapse" id="app-navbar-collapse">

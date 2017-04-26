@@ -86,17 +86,26 @@ class LoginController extends Controller
 
             $userExist = User::where('name', $token->getClaim('abn'))->first();
             if (!$userExist) {
+                $apiRequest = new \ApiRequest();
                 //create new customer for user
                 $partisipantsIds = $token->getClaim('urn:oasis:names:tc:ebcore:partyid-type:iso6523');
-                $newCustomerData = ((new \ApiRequest())->createNewCustomer($partisipantsIds));
+                $newCustomerData = ($apiRequest->createNewCustomer($partisipantsIds));
+
+
                 $abnData = \CompanyBookAPI::searchByAbn($token->getClaim('abn'));
                 User::create([
                     'name' => $token->getClaim('abn'),
                     'email' => $token->getClaim('abn'),
-                    'abn_name' => $abnData['attributes']['extra_data']['name'] ?? '',
+                    'abn_name' => $abnData['attributes']['extra_data']['name'] ?? 'No ABR entry',
                     'customer_id' => $newCustomerData['uuid'],
                     'password' => bcrypt($token->getClaim('abn')),
                 ]);
+                //create new endpoint for user
+                $gwToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 945682);
+                $endpoint = $apiRequest->createEndpoint($token->getClaim('abn'), $gwToken['id_token']);
+                $dcpToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 274953);
+                $apiRequest->createServiceMetadata($endpoint, $dcpToken['id_token'], $token->getClaim('abn'));
+                //todo POST INFORMATION TO DCL
             }
             if (Auth::attempt(['name' => $token->getClaim('abn'), 'password' => $token->getClaim('abn')])) {
 

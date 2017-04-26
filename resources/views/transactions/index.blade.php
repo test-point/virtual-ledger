@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
-@section('abn_name')
-    @if(Auth::user()->abn_name) for "{{ Auth::user()->abn_name }}" @endif
-@endsection
+@section('abn_name') @if(Auth::user()->abn_name) <a class="navbar-brand" href="https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::{{ Auth::user()->name }}/service/dbc::core-invoice?format=json" target="_blank">for "{{ Auth::user()->abn_name }}"</a> @endif @endsection
 
 @section('content')
     <div class="container">

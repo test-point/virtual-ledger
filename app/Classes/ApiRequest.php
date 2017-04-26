@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -217,5 +218,87 @@ class ApiRequest
         }, $data['ProcessList']);
         //multidimensional array to one-dimensional array
         return array_reduce($result, 'array_merge', array());
+    }
+
+    /**
+     * Create new endpoint for user
+     *
+     * @param $abn
+     * @param $token
+     *
+     * @return mixed
+     */
+    public function createEndpoint($abn, $token)
+    {
+        //create new tap-gw token
+        $headers = [
+            'headers' => [
+                'Authorization' => 'JWT ' . $token,
+                'Accept' => 'application/json; indent=4',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode([
+                "participant_id" => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn"
+            ])
+        ];
+        $response = $this->makeRequest('POST', 'https://tap-gw.testpoint.io/api/endpoints', $headers);
+        return $response['data']['id'] ?? false;
+    }
+
+    public function createServiceMetadata($endpoint, $token, $abn)
+    {
+        $processes = [
+            'invoice',
+            'adjustment',
+            'rcti',
+            'taxreceipt',
+            'creditnote',
+            'debitnote',
+        ];
+        $requestData = [
+            'ProcessList' => [],
+            'DocumentIdentifier' => [
+                'scheme' => 'dbc',
+                'value' => 'core-invoice',
+                'id' => 'dbc::core-invoice',
+            ],
+            'ParticipantIdentifier' => [
+                'scheme' => 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151',
+                'value' => $abn
+            ]
+        ];
+        foreach($processes as $process){
+            $requestData['ProcessList'][] = [
+                'ProcessIdentifier' => [
+                    'scheme' => 'dbc',
+                    'value' => $process,
+                ],
+                'ServiceEndpointList' => [
+                    [
+                        'ServiceActivationDate' => Carbon::now()->format('Y-m-d'),
+                        'Certificate' => '123',
+                        'EndpointURI' => "http://tap-gw.testpoint.io/api/endpoints/$endpoint/message/",
+                        'transportProfile' => 'TBD',
+                        'ServiceExpirationDate' => Carbon::now()->addYears(1)->format('Y-m-d'),
+                        'RequireBusinessLevelSignature' => "false",
+                        'TechnicalInformationUrl' => '123',
+                        'MinimumAuthenticationLevel' => '0',
+                        'ServiceDescription' => '123',
+
+                    ]
+                ]
+            ];
+        }
+
+        $headers = [
+            'headers' => [
+                'Authorization' => 'JWT ' . $token,
+                'Accept' => 'application/json; indent=4',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode($requestData)
+        ];
+
+        return $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/dbc::core-invoice", $headers);
     }
 }
