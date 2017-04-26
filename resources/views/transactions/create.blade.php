@@ -1,16 +1,18 @@
+@if(!empty($abnNotConfigured))
+    <div class="alert alert-warning">
+        ABN has no DCL entry and so is not able to receive messages.
+        Please either create a new virtual ledger account for that ABN or
+        hook up your own software using that ABN and tap-gw.testpoint.io services.
+    </div>
+@endif
 <form action="/transactions" method="post" id="transactionSearchFilterByForm">
     <div class="row">
 
         {{ csrf_field() }}
 
         <div class="form-group col-sm-6 col-md-6">
-            <label for="filterProduct">Receiver ABN:</label>
-            <select class="form-control" id="receiver_abn" name="receiver_abn">
-                <option value="">- Choose ABN -</option>
-                @foreach(\App\Abn::all() as $abnRow)
-                    <option value="{{ $abnRow->abn }}" @if($abnRow->abn == $request->get('receiver_abn')) selected="selected"@endif>{{ $abnRow->abn }}</option>
-                @endforeach
-            </select>
+            <label for="receiver_abn">Receiver ABN:</label>
+            <input class="form-control" id="receiver_abn" name="receiver_abn" type="text" value="{{ $request->get('receiver_abn') }}"/>
         </div>
 
         <div class="form-group col-sm-6 col-md-6">

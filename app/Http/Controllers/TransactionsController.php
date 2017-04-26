@@ -32,9 +32,13 @@ class TransactionsController extends Controller
     public function filters(Request $request)
     {
         $apiRequest = new \ApiRequest();
-        $documentIds = $endpoints = false;
+        $documentIds = $endpoints = $abnNotConfigured = false;
+
         if ($request->get('receiver_abn') && !$request->get('document_id')) {
             $documentIds = $apiRequest->getDocumentIds($request->get('receiver_abn'));
+            if(!count($documentIds)) {
+                $abnNotConfigured = true;
+            }
             session()->put('documentIds', $documentIds);
             if(count($documentIds) === 1){
                 $request->merge( [ 'document_id' => array_first($documentIds) ] );
@@ -51,7 +55,8 @@ class TransactionsController extends Controller
         $data = [
             'endpoints' => $endpoints,
             'documentIds' => $documentIds,
-            'request' => $request
+            'request' => $request,
+            'abnNotConfigured' => $abnNotConfigured
         ];
         return response()->json(['html' => view('transactions.create')->with($data)->render()]);
     }
