@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Transaction;
+use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,12 @@ class TransactionsController extends Controller
      */
     public function filters(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'receiver_abn' => 'required|digits:11'
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(), 422);
+        }
         $apiRequest = new \ApiRequest();
         $documentIds = $endpoints = $abnNotConfigured = false;
 

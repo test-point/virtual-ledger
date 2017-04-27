@@ -101,6 +101,8 @@
                     backdrop: 'static',
                     keyboard: false
                 });
+                $('.has-error').removeClass('has-error');
+                $('.error').remove();
                 $.ajax({
                     type: 'get',
                     dataType: 'json',
@@ -108,6 +110,16 @@
                     data: $('#transactionSearchFilterByForm').serialize(),
                     success: function (data) {
                         $('#filters').html(data.html);
+                        jQuery('#loadingModal').modal('hide');
+                    },
+                    error: function (response) {
+                        response = $.parseJSON(response.responseText);
+                        $.each(response, function (index, elem) {
+                            $('#' + index).closest('.form-group').addClass('has-error');
+                            $('#' + index).closest('.form-group').append(
+                                '<span class="error alert-danger">'+elem.join('<br>')+'</span><br>'
+                            );
+                        })
                         jQuery('#loadingModal').modal('hide');
                     }
                 })
