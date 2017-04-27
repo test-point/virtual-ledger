@@ -15,35 +15,37 @@
             <input class="form-control" id="receiver_abn" name="receiver_abn" type="text" value="{{ $request->get('receiver_abn') }}"/>
         </div>
 
-        <div class="form-group col-sm-6 col-md-6">
-            <label for="document_id">Document ID:</label>
-            <select class="form-control" name="document_id" id="document_id" @if(!$documentIds) disabled="disabled"@endif>
-                <option value="">- Choose document id -</option>
-                @if($documentIds)
-                    @foreach($documentIds as $documentId)
-                        <option value="{{ $documentId }}" @if($documentId == $request->get('document_id')) selected="selected"@endif>{{ $documentId }}</option>
-                    @endforeach
-                @endif
-            </select>
-        </div>
+        @if($request->get('receiver_abn'))
+            <div class="form-group col-sm-6 col-md-6">
+                <label for="document_id">Document ID:</label>
+                <select class="form-control" name="document_id" id="document_id" @if(!$documentIds) disabled="disabled"@endif>
+                    <option value="">- Choose document id -</option>
+                    @if($documentIds)
+                        @foreach($documentIds as $documentId)
+                            <option value="{{ $documentId }}" @if($documentId == $request->get('document_id')) selected="selected"@endif>{{ $documentId }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
 
-        <div class="form-group col-sm-12 col-md-12">
-            <label for="endpoint">Endpoint:</label>
-            <select class="form-control" name="endpoint" id="endpoint" @if(!$endpoints)disabled="disabled"@endif>
-                <option value="">- Choose endpoint -</option>
-                @if($endpoints)
-                    @foreach($endpoints as $endpoint)
-                        <?php $endpoint1 = explode(' - ', $endpoint);?>
-                        <option value="{{ end($endpoint1) }}" @if($endpoint == $request->get('endpoint')) selected="selected"@endif>{{ $endpoint }}</option>
-                    @endforeach
-                @endif
-            </select>
-        </div>
+            <div class="form-group col-sm-12 col-md-12">
+                <label for="endpoint">Endpoint:</label>
+                <select class="form-control" name="endpoint" id="endpoint" @if(!$endpoints)disabled="disabled"@endif>
+                    <option value="">- Choose endpoint -</option>
+                    @if($endpoints)
+                        @foreach($endpoints as $endpoint)
+                            <?php $endpoint1 = explode(' - ', $endpoint);?>
+                            <option value="{{ end($endpoint1) }}" @if($endpoint == $request->get('endpoint')) selected="selected"@endif>{{ $endpoint }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
 
-        <div class="form-group col-sm-12 col-md-12">
-            <label for="filterSuite">Document:</label>
-            <textarea class="form-control" id="document" name="document"></textarea>
-        </div>
+            <div class="form-group col-sm-12 col-md-12">
+                <label for="filterSuite">Document:</label>
+                <textarea class="form-control" id="document" name="document"></textarea>
+            </div>
+        @endif
     </div>
 
     <div class="filter-box-footer">
