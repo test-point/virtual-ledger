@@ -25,9 +25,7 @@ class ValidationRules
         foreach (str_split($abn) as $key => $digit) {
             $sum += ($digit * $weights[$key]);
         }
-        error_log($sum);
         if (($sum % 89) != 0) {
-            dump($sum);
             return false;
         }
         return true;
