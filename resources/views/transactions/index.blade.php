@@ -117,7 +117,7 @@
                         $.each(response, function (index, elem) {
                             $('#' + index).closest('.form-group').addClass('has-error');
                             $('#' + index).closest('.form-group').append(
-                                '<span class="error alert-danger">'+elem.join('<br>')+'</span><br>'
+                                '<span class="error alert-danger">'+elem.join('<br>')+'</span>'
                             );
                         })
                         jQuery('#loadingModal').modal('hide');

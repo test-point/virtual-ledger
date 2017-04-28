@@ -33,7 +33,7 @@ class TransactionsController extends Controller
     public function filters(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'receiver_abn' => 'required|digits:11'
+            'receiver_abn' => 'required|abn'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(), 422);

@@ -101,6 +101,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'receiver_abn' => [
+            'abn' => 'ABN value is invalid'
+        ]
     ],
 
     /*
