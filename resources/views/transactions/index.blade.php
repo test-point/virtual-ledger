@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('abn_name') @if(Auth::user()->abn_name) <a class="navbar-brand" href="https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::{{ Auth::user()->name }}" target="_blank">for "{{ Auth::user()->abn_name }}"</a> @endif @endsection
+@section('abn_name') @if(Auth::user()->abn_name) <a class="navbar-brand"
+                                                    href="https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::{{ Auth::user()->name }}" target="_blank">for
+    "{{ Auth::user()->abn_name }}"</a> @endif @endsection
 
 @section('content')
     <div class="container">
@@ -69,18 +71,18 @@
 @section('additional_js')
     <script>
         jQuery(document).ready(function () {
-            jQuery(document).on('submit', '#transactionSearchFilterByForm', function (e) {
+            jQuery('body').on('submit', '#transactionSearchFilterByForm', function (e) {
                 e.preventDefault();
                 jQuery('#loadingModal').modal({
                     backdrop: 'static',
                     keyboard: false
                 });
                 $('.has-error').removeClass('has-error');
-                $.ajax({
+                $('.error').remove();
+                $('#transactionSearchFilterByForm').ajaxSubmit({
                     type: 'post',
                     dataType: 'json',
                     url: '/transactions',
-                    data: $('#transactionSearchFilterByForm').serialize(),
                     success: function (data) {
                         jQuery('#loadingModal').modal('hide');
                         location.reload();
@@ -89,6 +91,9 @@
                         response = $.parseJSON(response.responseText);
                         $.each(response, function (index, elem) {
                             $('#' + index).closest('.form-group').addClass('has-error');
+                            $('#' + index).closest('.form-group').append(
+                                '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
+                            );
                         })
                         jQuery('#loadingModal').modal('hide');
                     }
@@ -117,7 +122,7 @@
                         $.each(response, function (index, elem) {
                             $('#' + index).closest('.form-group').addClass('has-error');
                             $('#' + index).closest('.form-group').append(
-                                '<span class="error alert-danger">'+elem.join('<br>')+'</span>'
+                                '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
                             );
                         })
                         jQuery('#loadingModal').modal('hide');

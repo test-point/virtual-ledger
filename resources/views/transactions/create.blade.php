@@ -42,8 +42,21 @@
             </div>
 
             <div class="form-group col-sm-12 col-md-12">
-                <label for="filterSuite">Document:</label>
-                <textarea class="form-control" id="document" name="document"></textarea>
+                <label for="template_id">Select template:</label>
+                <select class="form-control" name="template_id" id="template_id" @if(!$endpoints)disabled="disabled"@endif>
+                    <option value="">- Choose template -</option>
+                    @foreach($templates as $template)
+                        <option value="{{ $template->id }}" @if($template->id == $request->get('template_id')) selected="selected"@endif>{{ $template->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group col-sm-12 col-md-12">
+                <label for="template_file">or upload your own template:</label>
+                <input class="form-control" id="template_file" name="template_file" type="file" @if(!$endpoints)disabled="disabled"@endif>
+            </div>
+            <div class="form-group col-sm-12 col-md-12">
+                <label for="document">or paste document json:</label>
+                <textarea class="form-control" id="document" name="document" @if(!$endpoints)disabled="disabled"@endif></textarea>
             </div>
         @endif
     </div>

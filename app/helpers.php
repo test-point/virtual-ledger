@@ -12,3 +12,14 @@ function runConsoleCommand($cmd)
         Log::debug('Console command error: ' . $e->getMessage());
     }
 }
+
+function replaceABNData($message, $receiverAbn, $senderAbn)
+{
+    $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $senderAbn;
+    $message['Invoice']['accountingCustomerParty']['party']['partyIdentification'][0]['ABN'] = $receiverAbn;
+    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $senderAbn;
+    $message['Invoice']['issueDate'] = \Carbon\Carbon::now()->startOfMonth()->toDateString();
+    $message['Invoice']['dueDate'] = \Carbon\Carbon::now()->addMonth()->startOfMonth()->toDateString();
+
+    return $message;
+}

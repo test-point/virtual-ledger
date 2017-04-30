@@ -48,6 +48,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        'templates' => [
+            'driver' => 'local',
+            'root'   => resource_path('data/templates/resources/ausdigital-syn/2.0/samples/Invoice'),
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

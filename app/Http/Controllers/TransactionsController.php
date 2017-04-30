@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\MessageTemplate;
 use App\Transaction;
 use Validator;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class TransactionsController extends Controller
     public function filters(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'receiver_abn' => 'required|abn'
+            'receiver_abn' => 'required'//abn
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(), 422);
@@ -63,6 +64,7 @@ class TransactionsController extends Controller
             'endpoints' => $endpoints,
             'documentIds' => $documentIds,
             'request' => $request,
+            'templates' => MessageTemplate::all(),
             'abnNotConfigured' => $abnNotConfigured
         ];
         return response()->json(['html' => view('transactions.create')->with($data)->render()]);
@@ -81,6 +83,21 @@ class TransactionsController extends Controller
          * Generate keys for current user
          */
 
+        if($request->get('document')){
+            $message = $request->get('document');
+        } elseif($request->get('template_id')){
+            $message = json_decode(MessageTemplate::find($request->get('template_id'))->content, true);
+            $message = json_encode(replaceABNData($message, $request->get('receiver_abn'), session('abn')));
+        } else {
+            $message = file_get_contents($request->file('template_file'));
+            $validator = Validator::make(['template_file' => $message], [
+                'template_file' => 'json'
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+        }
+
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . session('user_urn'));
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
@@ -90,7 +107,7 @@ class TransactionsController extends Controller
         ]);
 
         //save json to file
-        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $request->get('document'));
+        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), json_encode(json_decode($message), JSON_PRETTY_PRINT));
 
         // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
         runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
