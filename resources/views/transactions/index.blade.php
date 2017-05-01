@@ -37,7 +37,30 @@
                                         <td>{{ $transaction->from_party }}</td>
                                         <td>{{ $transaction->to_party }}</td>
                                         <td>
-                                            <span title="{{ $transaction->message_hash }}">{{ substr($transaction->message_hash, 0, 10) }}</span>
+                                            <span title="{{ $transaction->message_hash }}"></span>
+
+                                            <a class="btn" data-toggle="modal" data-target="#messageHashModal{{ $transaction->id }}">
+                                                {{ substr($transaction->message_hash, 0, 10) }}
+                                            </a>
+
+                                            <!-- Modal -->
+                                            <div class="modal fade" id="messageHashModal{{ $transaction->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                            <h4 class="modal-title" id="myModalLabel">Message hash</h4>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                           {{ $transaction->message_hash }}
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>
                                             <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
