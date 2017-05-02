@@ -5,9 +5,27 @@
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
-                    <div class="panel-heading">Login</div>
+                    <div class="panel-heading">Login via idp.testpoint.io</div>
                     <div class="panel-body">
-                        <form class="form-horizontal" role="form" method="POST" action="{{ route('login') }}">
+
+                        <div class="social-buttons">
+                            <a href="{{ route('social.redirect', ['provider' => 'idp']) }}" class="btn btn-lg waves-effect waves-light btn-block">idp.testpoint.io</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-8 col-md-offset-2">OR</div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-8 col-md-offset-2">
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">Login via token</div>
+                    <div class="panel-body">
+                        <form id="login-form" class="form-horizontal" role="form" method="POST" action="{{ route('login') }}">
                             {{ csrf_field() }}
 
                             <div class="form-group{{ $errors->has('token') ? ' has-error' : '' }}">

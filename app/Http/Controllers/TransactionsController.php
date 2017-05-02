@@ -34,7 +34,7 @@ class TransactionsController extends Controller
     public function filters(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'receiver_abn' => 'required'//abn
+            'receiver_abn' => 'required|abn'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(), 422);
@@ -98,7 +98,7 @@ class TransactionsController extends Controller
             }
         }
 
-        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . session('user_urn'));
+        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn'));
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
         $transaction = Auth::user()->transactions()->create([

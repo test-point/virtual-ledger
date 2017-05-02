@@ -35,4 +35,11 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+     'testpoint' => [
+        'client_id'     => env('TESTPOINT_ID'),
+        'client_secret' => env('TESTPOINT_SECRET'),
+        'redirect'      => env('TESTPOINT_REDIRECT')
+    ]
+
+
 ];

@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+
+class SocialController extends Controller
+{
+    /**
+     * Redirect user to idp
+     */
+    public function getSocialRedirect()
+    {
+        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io', config('services.testpoint.client_id'));
+        $oidc->setRedirectURL(config('services.testpoint.redirect'));
+        $oidc->authenticate();
+    }
+
+    /**
+     * Process user
+     * @return bool|\Illuminate\Http\RedirectResponse
+     */
+    public function getSocialHandle()
+    {
+        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
+            config('services.testpoint.client_id'),
+            config('services.testpoint.client_secret'));
+
+        $oidc->authenticate();
+        $userInfo = (array)$oidc->requestUserInfo();
+        $token = $oidc->getIdToken();
+
+        createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
+        return attemptLogin($userInfo['abn'], $token);
+    }
+}

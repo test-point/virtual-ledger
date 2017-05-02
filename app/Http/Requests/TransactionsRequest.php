@@ -25,7 +25,7 @@ class TransactionsRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'receiver_abn' => 'required',
+            'receiver_abn' => 'required|abn',
             'endpoint' => 'required',
             'document_id' => 'required',
 

@@ -16,10 +16,55 @@ function runConsoleCommand($cmd)
 function replaceABNData($message, $receiverAbn, $senderAbn)
 {
     $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $senderAbn;
-    $message['Invoice']['accountingCustomerParty']['party']['partyIdentification'][0]['ABN'] = $receiverAbn;
-    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $senderAbn;
+    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $receiverAbn;
     $message['Invoice']['issueDate'] = \Carbon\Carbon::now()->startOfMonth()->toDateString();
     $message['Invoice']['dueDate'] = \Carbon\Carbon::now()->addMonth()->startOfMonth()->toDateString();
 
     return $message;
+}
+
+/**
+ * Check user existence and create new one if doesn't exist
+ * @param $abn
+ * @param $partisipantsIds
+ */
+function createNewUser($abn, $partisipantsIds)
+{
+    $userExist = \App\User::where('name', $abn)->first();
+    if (!$userExist) {
+        $apiRequest = new \ApiRequest();
+
+        //create new customer for user
+        $newCustomerData = ($apiRequest->createNewCustomer($partisipantsIds));
+
+        $abnData = \CompanyBookAPI::searchByAbn($abn);
+        \App\User::create([
+            'name' => $abn,
+            'email' => $abn,
+            'abn_name' => $abnData['attributes']['extra_data']['name'] ?? 'No ABR entry',
+            'customer_id' => $newCustomerData['uuid'],
+            'password' => bcrypt($abn),
+        ]);
+        //create new endpoint for user
+        $gwToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 945682);
+        $endpoint = $apiRequest->createEndpoint($abn, $gwToken['id_token']);
+        $dcpToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 274953);
+        $apiRequest->createServiceMetadata($endpoint, $dcpToken['id_token'], $abn);
+    }
+}
+
+/**
+ * Attempt login and set user data
+ * @param $abn
+ * @param $token
+ * @return bool|\Illuminate\Http\RedirectResponse
+ */
+function attemptLogin($abn, $token)
+{
+    if (Auth::attempt(['name' => $abn, 'password' => $abn])) {
+        session()->put('abn', $abn);
+        session()->put('token', $token);
+        return redirect()->intended('transactions');
+    }
+    return false;
 }
