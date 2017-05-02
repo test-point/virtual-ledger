@@ -15,8 +15,8 @@ function runConsoleCommand($cmd)
 
 function replaceABNData($message, $receiverAbn, $senderAbn)
 {
-    $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $senderAbn;
-    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = $receiverAbn;
+    $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = (string) $senderAbn;
+    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = (string) $receiverAbn;
     $message['Invoice']['issueDate'] = \Carbon\Carbon::now()->startOfMonth()->toDateString();
     $message['Invoice']['dueDate'] = \Carbon\Carbon::now()->addMonth()->startOfMonth()->toDateString();
 
