@@ -15,14 +15,15 @@ class UpdateTemplatesController extends Controller
         //git config core.sparseCheckout true
         //echo "resources/ausdigital-syn/2.0/samples/Invoice/" >> .git/info/sparse-checkout
         //git pull origin master
-        dump("cd $templatesPath && git pull origin master");
+//        dump("cd $templatesPath && git pull origin master");
         runConsoleCommand("cd $templatesPath && git pull origin master");
 
-        dump($templatesPath . '/resources/ausdigital-syn/2.0/samples/Invoice');
+//        dump($templatesPath . '/resources/ausdigital-syn/2.0/samples/Invoice');
 
         $storage = Storage::disk('templates');
         foreach ($storage->files() as $file) {
             MessageTemplate::updateOrCreate(['name' => $file], ['content' => $storage->get($file)]);
         }
+        exit('success');
     }
 }
