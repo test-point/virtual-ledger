@@ -22,15 +22,19 @@ class SocialController extends Controller
      */
     public function getSocialHandle()
     {
-        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
-            config('services.testpoint.client_id'),
-            config('services.testpoint.client_secret'));
+        try {
+            $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
+                config('services.testpoint.client_id'),
+                config('services.testpoint.client_secret'));
 
-        $oidc->authenticate();
-        $userInfo = (array)$oidc->requestUserInfo();
-        $token = $oidc->getIdToken();
+            $oidc->authenticate();
+            $userInfo = (array)$oidc->requestUserInfo();
+            $token = $oidc->getIdToken();
 
-        createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
-        return attemptLogin($userInfo['abn'], $token);
+            createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
+            return attemptLogin($userInfo['abn'], $token);
+        } catch(\Exception $e){
+            return redirect()->intended('login');
+        }
     }
 }
