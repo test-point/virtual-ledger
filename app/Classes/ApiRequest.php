@@ -207,7 +207,7 @@ class ApiRequest
 
     public function getEndpoints($abn, $documentId)
     {
-        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . $documentId . '?format=json');
+        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . urlencode($documentId) . '?format=json');
         if(!$data){
             return false;
         }
