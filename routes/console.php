@@ -48,8 +48,8 @@ use Illuminate\Foundation\Inspiring;
                 if ($transaction) {
                     $transaction->update($transactionData);
                 } else {
-                    $transactionData['created_at'] = \Carbon\Carbon::parse($attributes['createdAt'])->toDateTimeString();
-                    $transactionData['updated_at'] = \Carbon\Carbon::parse($attributes['createdAt'])->toDateTimeString();
+                    $transactionData['created_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
+                    $transactionData['updated_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
                     $messageBody = $tapGw->getMessageBody($message['id']);
                     $transactionData['message_hash'] = $messageBody['hash'];
                     $transactionData['message_id'] = $message['id'];
