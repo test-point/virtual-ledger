@@ -113,6 +113,28 @@ class ApiRequest
         return $this->makeRequest('GET', 'https://tap-gw.testpoint.io/api/messages/'.$messageId.'/status/', $headers);
     }
 
+     /**
+     * Get tap message
+     *
+     * @param string $messageId
+     *
+     * @return mixed
+     */
+    public function getMessages($token, $participantId, $endpointId, $status)
+    {
+        $headers = [
+            'headers' => [
+                'Authorization' => 'JWT ' . $token
+            ],
+            'body' => json_encode([
+                'participantId' => $participantId,
+                'endpointId' => $endpointId,
+                'status' => $status,
+            ])
+        ];
+        return $this->makeRequest('GET', 'https://tap-gw.testpoint.io/api/messages/', $headers);
+    }
+
     /**
      * Generate message endpoint url
      *
@@ -190,13 +212,19 @@ class ApiRequest
      */
     public function getNewTokenForCustomer($customerId, $clientId = '274953')
     {
-        $headers = [
-            'headers' => [
-                'Authorization' => 'Token ' . $this->idpDevToken,
-                'Accept' => 'application/json; indent=4',
-            ]
-        ];
-        return $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
+        $cacheKey = 'token_' . $customerId . '_' . $clientId;
+        $token = cache()->get($cacheKey);
+        if(!$token) {
+            $headers = [
+                'headers' => [
+                    'Authorization' => 'Token ' . $this->idpDevToken,
+                    'Accept' => 'application/json; indent=4',
+                ]
+            ];
+            $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
+            cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
+        }
+        return $token;
     }
 
     public function getDocumentIds($abn)
@@ -230,7 +258,6 @@ class ApiRequest
      */
     public function createEndpoint($abn, $token)
     {
-        //create new tap-gw token
         $headers = [
             'headers' => [
                 'Authorization' => 'JWT ' . $token,

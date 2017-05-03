@@ -101,7 +101,7 @@ class TransactionsController extends Controller
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn'));
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
-        $transaction = Auth::user()->transactions()->create([
+        $transaction = Transaction::create([
             'from_party' => session('abn'),
             'to_party' => $request->get('receiver_abn'),
         ]);

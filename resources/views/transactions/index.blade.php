@@ -63,9 +63,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
+                                            @if($transaction->encripted_payload)
+                                                <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
+                                            @endif
                                             <br>
-                                            <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
+                                            @if($transaction->decripted_payload)
+                                                <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
+                                            @endif
                                         </td>
                                         <td>{{ $transaction->message_type }}</td>
                                         <td>
