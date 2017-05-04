@@ -9,6 +9,7 @@ Route::post('/update-templates', 'UpdateTemplatesController@updateInvoiceSamples
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/transactions', 'TransactionsController@index');
     Route::get('/transactions/filters', 'TransactionsController@filters');
+    Route::get('/transactions/get-template', 'TransactionsController@getTemplate');
     Route::post('/transactions', 'TransactionsController@create');
     Route::get('/download/{filename}', 'TransactionsController@download');
 });

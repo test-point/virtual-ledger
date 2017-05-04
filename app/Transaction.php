@@ -20,7 +20,8 @@ class Transaction extends Model
      * Get created_at date mutator
      *
      * @param $value
-     * @return static
+     *
+     * @return string
      */
     public function getCreatedAtAttribute($value)
     {

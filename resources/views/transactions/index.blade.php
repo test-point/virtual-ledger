@@ -159,5 +159,32 @@
                 })
             });
         });
+
+        jQuery(document).ready(function () {
+            jQuery(document).on('change', '#template_id', function (e) {
+                jQuery('#loadingModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                $('.has-error').removeClass('has-error');
+                $('.error').remove();
+                $.ajax({
+                    type: 'get',
+                    dataType: 'json',
+                    url: '/transactions/get-template',
+                    data: {
+                        'template_id' : $('#template_id').val(),
+                        'receiver_abn' : $('#receiver_abn').val(),
+                    },
+                    success: function (data) {
+                        $('#document').val(data.html);
+                        jQuery('#loadingModal').modal('hide');
+                    },
+                    error: function (response) {
+                        jQuery('#loadingModal').modal('hide');
+                    }
+                })
+            });
+        });
     </script>
 @endsection

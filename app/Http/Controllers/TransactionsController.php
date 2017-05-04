@@ -71,6 +71,24 @@ class TransactionsController extends Controller
     }
 
     /**
+     * Generate message content for a selected template
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTemplate(Request $request)
+    {
+        $templateContent = '';
+        $templateId = $request->get('template_id');
+        if ($templateId) {
+            $templateContent = replaceABNData(json_decode(MessageTemplate::find($templateId)->content, true), $request->get('receiver_abn'), Auth::user()->name);
+            $templateContent = json_encode($templateContent, JSON_PRETTY_PRINT);
+        }
+        return response()->json(['html' => $templateContent]);
+    }
+
+    /**
      * Create new message route
      *
      * @param TransactionsRequest $request

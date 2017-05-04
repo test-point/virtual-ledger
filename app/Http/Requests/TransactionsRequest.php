@@ -30,7 +30,6 @@ class TransactionsRequest extends FormRequest
             'document_id' => 'required',
 
             'document' => 'required_without_all:template_id,template_file',
-            'template_id' => 'required_without_all:document,template_file',
             'template_file' => 'required_without_all:document,template_id',
         ];
 
@@ -40,9 +39,6 @@ class TransactionsRequest extends FormRequest
 
         if ($this->request->get('document')) {
             $rules['document'] = 'required_without_all:template_id,template_file|json';
-        }
-        if ($this->request->get('template_id')) {
-            $rules['template_id'] = 'required_without_all:document,template_file|exists:message_templates,id';
         }
 
         return $rules;

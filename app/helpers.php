@@ -13,12 +13,21 @@ function runConsoleCommand($cmd)
     }
 }
 
+/**
+ * Replace data in MessageTemplate
+ *
+ * @param $message
+ * @param $receiverAbn
+ * @param $senderAbn
+ * @return mixed
+ */
 function replaceABNData($message, $receiverAbn, $senderAbn)
 {
-    $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = (string) $senderAbn;
-    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID']['ABN'] = (string) $receiverAbn;
-    $message['Invoice']['issueDate'] = \Carbon\Carbon::now()->startOfMonth()->toDateString();
-    $message['Invoice']['dueDate'] = \Carbon\Carbon::now()->addMonth()->startOfMonth()->toDateString();
+    $message['Invoice']['accountingSupplierParty']['party']['partyLegalEntity'][0]['companyID'] = ['ABN' => "$senderAbn"];
+    $message['Invoice']['accountingCustomerParty']['party']['partyLegalEntity'][0]['companyID'] = ['ABN' => "$receiverAbn"];
+
+    $message['Invoice']['accountingSupplierParty']['party']['partyIdentification'][0] = ['ABN' => "$senderAbn"];
+    $message['Invoice']['accountingCustomerParty']['party']['partyIdentification'][0] = ['ABN' => "$receiverAbn"];
 
     return $message;
 }

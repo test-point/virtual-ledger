@@ -56,7 +56,7 @@
             </div>
             <div class="form-group col-sm-12 col-md-12">
                 <label for="document">or paste document json:</label>
-                <textarea class="form-control" id="document" name="document" @if(!$endpoints)disabled="disabled"@endif></textarea>
+                <textarea class="form-control" id="document" name="document" @if(!$endpoints)disabled="disabled"@endif rows="10"></textarea>
             </div>
         @endif
     </div>
