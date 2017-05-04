@@ -103,9 +103,6 @@ class TransactionsController extends Controller
 
         if($request->get('document')){
             $message = $request->get('document');
-        } elseif($request->get('template_id')){
-            $message = json_decode(MessageTemplate::find($request->get('template_id'))->content, true);
-            $message = json_encode(replaceABNData($message, $request->get('receiver_abn'), session('abn')));
         } else {
             $message = file_get_contents($request->file('template_file'));
             $validator = Validator::make(['template_file' => $message], [

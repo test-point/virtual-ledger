@@ -29,16 +29,16 @@ class TransactionsRequest extends FormRequest
             'endpoint' => 'required',
             'document_id' => 'required',
 
-            'document' => 'required_without_all:template_id,template_file',
-            'template_file' => 'required_without_all:document,template_id',
+            'document' => 'required_without:template_file',
+            'template_file' => 'required_without:document',
         ];
 
         if ($this->request->get('template_file')) {
-            $rules['template_file'] = 'required_without_all:document,template_id|file';
+            $rules['template_file'] = 'required_without:document|file';
         }
 
         if ($this->request->get('document')) {
-            $rules['document'] = 'required_without_all:template_id,template_file|json';
+            $rules['document'] = 'required_without:template_file|json';
         }
 
         return $rules;
