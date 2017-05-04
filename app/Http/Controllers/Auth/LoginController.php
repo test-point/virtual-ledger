@@ -76,7 +76,7 @@ class LoginController extends Controller
             $token = (new Parser())->parse((string)$request->get('token'));
             $data = new ValidationData();
             $data->setIssuer('https://idp.testpoint.io');
-            $data->setAudience($token->getClaim('aud'));
+            $data->setAudience('430546');
 
             if ($token->validate($data)) {
                 createNewUser($token->getClaim('abn'), $token->getClaim('urn:oasis:names:tc:ebcore:partyid-type:iso6523'));
