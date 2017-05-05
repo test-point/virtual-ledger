@@ -118,7 +118,7 @@
                         response = $.parseJSON(response.responseText);
                         $('.error').remove();
                         $.each(response, function (index, elem) {
-                            if(!$('#' + index).length){
+                            if(!$('#' + index).length && elem.join == "This receiver ABN doesn't have any active public key in DCP"){
                                 index = 'receiver_abn';
                             }
                             $('#' + index).closest('.form-group').addClass('has-error');
