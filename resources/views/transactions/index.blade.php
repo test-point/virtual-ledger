@@ -118,6 +118,9 @@
                         response = $.parseJSON(response.responseText);
                         $('.error').remove();
                         $.each(response, function (index, elem) {
+                            if(!$('#' + index).length){
+                                index = 'receiver_abn';
+                            }
                             $('#' + index).closest('.form-group').addClass('has-error');
                             $('#' + index).closest('.form-group').append(
                                 '<span class="error alert-danger">' + elem.join('<br>') + '</span>'

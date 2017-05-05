@@ -31,6 +31,9 @@ class ApiRequest
             ],
         ];
         $response = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
+        $response = array_filter($response, function($entry){
+            return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
+        });
         return array_first($response);
     }
 
@@ -52,7 +55,7 @@ class ApiRequest
             ],
             'body' => json_encode([
                 'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
-                'revoked' => \Carbon\Carbon::now()->addWeek()->format('Y-m-d H:i:s'),
+                'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];

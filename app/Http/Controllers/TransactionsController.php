@@ -97,6 +97,14 @@ class TransactionsController extends Controller
      */
     public function create(TransactionsRequest $request)
     {
+        $apiRequest = new \ApiRequest();
+        $token = $apiRequest->getNewTokenForCustomer(Auth::user()->customer_id);
+        $receiverPublicKey = (new \ApiRequest())->getReceiverPublicKey($request->get('receiver_abn'), $token['id_token'])['pubKey'];
+
+        if(!$receiverPublicKey) {
+            return response()->json([['This receiver ABN doesn\'t have any active public key in DCP']], 422);
+        }
+
         /**
          * Generate keys for current user
          */
@@ -116,6 +124,14 @@ class TransactionsController extends Controller
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn'));
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
+        // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
+        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
+        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/' . session('abn') . '_fingerprint.key'));
+
+        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . session('abn') . '_fingerprint.key')))[1])[0]);
+
+        $apiRequest->sendSenderPublicKey(session('abn'), $fingerprint, $token['id_token']);
+
         $transaction = Transaction::create([
             'from_party' => session('abn'),
             'to_party' => $request->get('receiver_abn'),
@@ -123,18 +139,6 @@ class TransactionsController extends Controller
 
         //save json to file
         file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), json_encode(json_decode($message), JSON_PRETTY_PRINT));
-
-        // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
-        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
-
-        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/' . session('abn') . '_fingerprint.key'));
-
-        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . session('abn') . '_fingerprint.key')))[1])[0]);
-        $apiRequest = new \ApiRequest();
-        $token = $apiRequest->getNewTokenForCustomer(Auth::user()->customer_id);
-        $apiRequest->sendSenderPublicKey(session('abn'), $fingerprint, $token['id_token']);
-
-        $receiverPublicKey = (new \ApiRequest())->getReceiverPublicKey($request->get('receiver_abn'), $token['id_token'])['pubKey'];
 
         file_put_contents(resource_path() . '/data/keys/receiver_' . $request->get('receiver_abn') . '.key', $receiverPublicKey);
 
