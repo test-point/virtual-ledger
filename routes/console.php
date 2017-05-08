@@ -51,6 +51,9 @@ use Illuminate\Foundation\Inspiring;
                     $transactionData['created_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
                     $transactionData['updated_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
                     $messageBody = $tapGw->getMessageBody($message['id']);
+
+                    file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
+
                     $transactionData['message_hash'] = $messageBody['hash'];
                     $transactionData['message_id'] = $message['id'];
                     $transactionData['from_party'] = str_replace('urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::', '', $messageBody['sender']);
