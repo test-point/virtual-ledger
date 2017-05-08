@@ -46,6 +46,10 @@ use Illuminate\Foundation\Inspiring;
                     'validation_status' => $attributes['status'],
                 ];
                 if ($transaction) {
+                    if(!file_exists(resource_path('data/keys/' . $transaction->id . '_message.json'))){
+                        $messageBody = $tapGw->getMessageBody($message['id']);
+                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
+                    }
                     $transaction->update($transactionData);
                 } else {
                     $transactionData['created_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
