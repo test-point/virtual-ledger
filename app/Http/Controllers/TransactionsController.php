@@ -125,7 +125,7 @@ class TransactionsController extends Controller
         runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
 
         // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
-        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
+        runConsoleCommand('gpg2 --export --armor  urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
         runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/' . session('abn') . '_fingerprint.key'));
 
         $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . session('abn') . '_fingerprint.key')))[1])[0]);
@@ -152,7 +152,7 @@ class TransactionsController extends Controller
 
         runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
 
-        runConsoleCommand('gpg2 --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
+        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
           --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn') . '" ' .
             resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 

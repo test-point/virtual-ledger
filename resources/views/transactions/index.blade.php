@@ -75,7 +75,7 @@
                                                 <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
                                             @endif
                                             <br>
-                                            @if($transaction->decripted_payload)
+                                            @if($transaction->decripted_payload && file_exists(resource_path('data/keys/' . $transaction->decripted_payload)))
                                                 <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
                                             @endif
                                         </td>

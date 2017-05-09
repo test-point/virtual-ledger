@@ -63,7 +63,11 @@ use Illuminate\Foundation\Inspiring;
                     file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
                     file_put_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'), @$messageBody['cyphertext']);
 
+                    //todo remove hardcoded homedir value
+                    runConsoleCommand('gpg2 --homedir /var/www/.gnupg --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $transactionData['to_party'] . '" -o '. resource_path('data/keys/' . $transaction->id . '_initial_message.json') .' -d ' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'));
+
                     $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
+                    $transaction->decripted_payload = $transaction->id . '_initial_message.json';
                     $transaction->save();
                 }
             }
