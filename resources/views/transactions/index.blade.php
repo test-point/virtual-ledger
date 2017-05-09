@@ -65,7 +65,7 @@
                                         </td>
 
                                         <td>
-                                            @if(file_exists(resource_path('data/keys/' . $transaction->id . '_message.json')))
+                                            @if($transaction->validation_status == 'sent' && file_exists(resource_path('data/keys/' . $transaction->id . '_message.json')))
                                                 <a href="/download/{{ $transaction->id . '_message.json' }}" target="_blank">Download</a>
                                             @endif
                                         </td>
