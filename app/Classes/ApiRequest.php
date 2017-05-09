@@ -55,11 +55,22 @@ class ApiRequest
             ],
             'body' => json_encode([
                 'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
-                'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
+                'revoked' => \Carbon\Carbon::now()->addWeek()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];
-        return $this->makeRequest('POST', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/', $data);
+        $url = 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/';
+        $requestType = 'POST';
+        if($this->getKeyByFingerprint($senderAbn, $fingerprint)){
+            $requestType = 'PATCH';
+            $url .= $fingerprint;
+        }
+        return $this->makeRequest($requestType, $url, $data);
+    }
+
+    public function getKeyByFingerprint($senderAbn, $fingerprint)
+    {
+        return $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/' . $fingerprint, []);
     }
 
 //    public function getKeys($abn, $token)
