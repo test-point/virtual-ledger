@@ -6,11 +6,8 @@
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
                     <div class="panel-heading">Login via idp.testpoint.io</div>
-                    <div class="panel-body">
-
-                        <div class="social-buttons">
-                            <a href="{{ route('social.redirect', ['provider' => 'idp']) }}" class="btn btn-lg waves-effect waves-light btn-block">idp.testpoint.io</a>
-                        </div>
+                    <div class="panel-body text-center">
+                        <a href="{{ route('social.redirect', ['provider' => 'idp']) }}" class="btn">idp.testpoint.io</a>
                     </div>
                 </div>
             </div>
