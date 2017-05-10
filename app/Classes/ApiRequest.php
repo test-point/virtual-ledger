@@ -25,15 +25,13 @@ class ApiRequest
      */
     public function getReceiverPublicKey($receiverAbn, $token)
     {
-        $data = [
-            'headers' => [
-                'Authorization' => 'JWT ' . $token
-            ],
-        ];
-        $response = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
-        $response = array_filter($response, function($entry){
-            return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
-        });
+        $data = [];
+        $response = (array) $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
+        if(!empty($response)) {
+            $response = array_filter($response, function ($entry) {
+                return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
+            });
+        }
         return array_first($response);
     }
 
