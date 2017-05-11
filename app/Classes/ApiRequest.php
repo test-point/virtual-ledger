@@ -53,7 +53,7 @@ class ApiRequest
             ],
             'body' => json_encode([
                 'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
-                'revoked' => \Carbon\Carbon::now()->addWeek()->format('Y-m-d H:i:s'),
+                'revoked' => \Carbon\Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];
@@ -224,18 +224,17 @@ class ApiRequest
      */
     public function getNewTokenForCustomer($customerId, $clientId = '274953')
     {
-        $cacheKey = 'token_' . $customerId . '_' . $clientId;
-        $token = cache()->get($cacheKey);
-        if(!$token) {
-            $headers = [
-                'headers' => [
-                    'Authorization' => 'Token ' . $this->idpDevToken,
-                    'Accept' => 'application/json; indent=4',
-                ]
-            ];
-            $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
-            cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
-        }
+//        $cacheKey = 'token_' . $customerId . '_' . $clientId;
+//        $token = cache()->get($cacheKey);
+//        if(!$token) {
+        $headers = [
+            'headers' => [
+                'Authorization' => 'Token ' . $this->idpDevToken,
+                'Accept' => 'application/json; indent=4',
+            ]
+        ];
+        $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
+//        cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
         return $token;
     }
 
