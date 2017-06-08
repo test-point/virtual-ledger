@@ -53,7 +53,7 @@ class ApiRequest
             ],
             'body' => json_encode([
                 'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
-                'revoked' => \Carbon\Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
+                'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];

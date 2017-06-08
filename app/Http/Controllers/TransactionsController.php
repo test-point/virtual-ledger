@@ -124,16 +124,6 @@ class TransactionsController extends Controller
         $senderAbn = session('abn');
         $receiverAbn = $request->get('receiver_abn');
 
-        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn);
-
-        // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
-        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . ' > ' . resource_path('data/keys/public_' . $senderAbn . '.key'));
-        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . ' > ' . resource_path('data/keys/' . $senderAbn . '_fingerprint.key'));
-
-        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . $senderAbn . '_fingerprint.key')))[1])[0]);
-
-        $apiRequest->sendSenderPublicKey($senderAbn, $fingerprint, $token['id_token']);
-
         $transaction = Transaction::create([
             'from_party' => $senderAbn,
             'to_party' => $receiverAbn,
