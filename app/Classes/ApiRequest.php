@@ -25,15 +25,13 @@ class ApiRequest
      */
     public function getReceiverPublicKey($receiverAbn, $token)
     {
-        $data = [
-            'headers' => [
-                'Authorization' => 'JWT ' . $token
-            ],
-        ];
-        $response = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
-        $response = array_filter($response, function($entry){
-            return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
-        });
+        $data = [];
+        $response = (array) $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
+        if(!empty($response)) {
+            $response = array_filter($response, function ($entry) {
+                return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
+            });
+        }
         return array_first($response);
     }
 
@@ -55,11 +53,22 @@ class ApiRequest
             ],
             'body' => json_encode([
                 'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
-                'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
+                'revoked' => \Carbon\Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];
-        return $this->makeRequest('POST', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/', $data);
+        $url = 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/';
+        $requestType = 'POST';
+        if($this->getKeyByFingerprint($senderAbn, $fingerprint)){
+            $requestType = 'PATCH';
+            $url .= $fingerprint;
+        }
+        return $this->makeRequest($requestType, $url, $data);
+    }
+
+    public function getKeyByFingerprint($senderAbn, $fingerprint)
+    {
+        return $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/' . $fingerprint, []);
     }
 
 //    public function getKeys($abn, $token)
@@ -215,18 +224,17 @@ class ApiRequest
      */
     public function getNewTokenForCustomer($customerId, $clientId = '274953')
     {
-        $cacheKey = 'token_' . $customerId . '_' . $clientId;
-        $token = cache()->get($cacheKey);
-        if(!$token) {
-            $headers = [
-                'headers' => [
-                    'Authorization' => 'Token ' . $this->idpDevToken,
-                    'Accept' => 'application/json; indent=4',
-                ]
-            ];
-            $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
-            cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
-        }
+//        $cacheKey = 'token_' . $customerId . '_' . $clientId;
+//        $token = cache()->get($cacheKey);
+//        if(!$token) {
+        $headers = [
+            'headers' => [
+                'Authorization' => 'Token ' . $this->idpDevToken,
+                'Accept' => 'application/json; indent=4',
+            ]
+        ];
+        $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
+//        cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
         return $token;
     }
 
