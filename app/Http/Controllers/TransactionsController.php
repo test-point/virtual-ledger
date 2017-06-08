@@ -121,39 +121,44 @@ class TransactionsController extends Controller
             }
         }
 
-        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn'));
-        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key ' . 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn'));
+        $senderAbn = session('abn');
+        $receiverAbn = $request->get('receiver_abn');
+
+        runConsoleCommand('gpg2 --batch -q --passphrase "" --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn);
 
         // gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::123123123
-        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/public_' . session('abn') . '.key'));
-        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . ' > ' . resource_path('data/keys/' . session('abn') . '_fingerprint.key'));
+        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . ' > ' . resource_path('data/keys/public_' . $senderAbn . '.key'));
+        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . ' > ' . resource_path('data/keys/' . $senderAbn . '_fingerprint.key'));
 
-        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . session('abn') . '_fingerprint.key')))[1])[0]);
+        $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . $senderAbn . '_fingerprint.key')))[1])[0]);
 
-        $apiRequest->sendSenderPublicKey(session('abn'), $fingerprint, $token['id_token']);
+        $apiRequest->sendSenderPublicKey($senderAbn, $fingerprint, $token['id_token']);
 
         $transaction = Transaction::create([
-            'from_party' => session('abn'),
-            'to_party' => $request->get('receiver_abn'),
+            'from_party' => $senderAbn,
+            'to_party' => $receiverAbn,
         ]);
 
         //save json to file
         file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), json_encode(json_decode($message), JSON_PRETTY_PRINT));
 
-        file_put_contents(resource_path() . '/data/keys/receiver_' . $request->get('receiver_abn') . '.key', $receiverPublicKey);
+        file_put_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key'), $receiverPublicKey);
+        //import receiver public key
 
+        runConsoleCommand('gpg2 --import ' . resource_path('data/keys/receiver_' . $receiverAbn . '.key'));
 
-        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" \
+        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
                         --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
                         --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
         );
 
         runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
-        runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
+        runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" \
+        "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
 
-        runConsoleCommand('gpg2 --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
-          --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $request->get('receiver_abn') . '" ' .
+        runConsoleCommand('gpg2 --trust-model always --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
+          --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '" ' .
             resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
         $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.hash')))[1]);
@@ -161,12 +166,14 @@ class TransactionsController extends Controller
             'cyphertext' => file_get_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg')),
             'hash' => $hash,
             'reference' => "",
-            'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . session('abn')
+            'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $senderAbn
         ];
 
         file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($message, JSON_PRETTY_PRINT));
 
-        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . session('abn') . '" --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
+        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
+        --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' \
+        --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
 
         $apiResponse = $apiRequest->sendMessage($request->get('endpoint'),
             resource_path('data/keys/' . $transaction->id . '_message.json'),
