@@ -126,13 +126,15 @@
                         response = $.parseJSON(response.responseText);
                         $('.error').remove();
                         $.each(response, function (index, elem) {
-                            if(!$('#' + index).length && elem.join('') == "This receiver ABN doesn't have any active public key in DCP"){
-                                index = 'receiver_abn';
+//                            if(!$('#' + index).length && elem.join('') == "This receiver ABN doesn't have any active public key in DCP"){
+//                                index = 'receiver_abn';
+//                            }
+                            if($('#' + index).length) {
+                                $('#' + index).closest('.form-group').addClass('has-error');
+                                $('#' + index).closest('.form-group').append(
+                                    '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
+                                );
                             }
-                            $('#' + index).closest('.form-group').addClass('has-error');
-                            $('#' + index).closest('.form-group').append(
-                                '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
-                            );
                         })
                         jQuery('#loadingModal').modal('hide');
                         $(window).scrollTop($('.error:first').offset().top);
@@ -161,10 +163,12 @@
                         response = $.parseJSON(response.responseText);
                         $('.error').remove();
                         $.each(response, function (index, elem) {
-                            $('#' + index).closest('.form-group').addClass('has-error');
-                            $('#' + index).closest('.form-group').append(
-                                '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
-                            );
+                            if($('#' + index).length) {
+                                $('#' + index).closest('.form-group').addClass('has-error');
+                                $('#' + index).closest('.form-group').append(
+                                    '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
+                                );
+                            }
                         })
                         jQuery('#loadingModal').modal('hide');
                     }

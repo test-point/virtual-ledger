@@ -130,19 +130,44 @@ class TransactionsController extends Controller
         ]);
 
         //save json to file
-        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), json_encode(json_decode($message), JSON_PRETTY_PRINT));
+        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
 
         file_put_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key'), $receiverPublicKey);
         //import receiver public key
 
-        runConsoleCommand('gpg2 --import ' . resource_path('data/keys/receiver_' . $receiverAbn . '.key'));
+        $gnupg = gnupg_init();
+//        runConsoleCommand('gpg2 --import ' . resource_path('data/keys/receiver_' . $receiverAbn . '.key'));
+        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key')));
+        $receiverFilgerprint = $info['fingerprint'];
 
-        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
-                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
-                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
-        );
+        $gnupg = gnupg_init();
+        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $senderAbn . '.key')));
+        $senderFilgerprint = $info['fingerprint'];
 
-        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
+
+//        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
+//                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
+//                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
+//        );
+
+        $gnupg = new \gnupg();
+        $gnupg->addsignkey($senderFilgerprint);
+        $gnupg->setsignmode(\gnupg::SIG_MODE_DETACH);
+        $signed = $gnupg->sign(file_get_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json')));
+        file_put_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.json'), $signed);
+
+
+//        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
+        $verify = $gnupg->verify($signed, $senderFilgerprint);
+
+        return response()->json([
+            'reveiver' => $receiverAbn,
+            'receiverFilgerprint' => $receiverFilgerprint,
+            'sender' => $senderAbn,
+            'senderFilgerprint' => $senderFilgerprint,
+            'signed' => $signed,
+            'verify' => $verify
+        ], 422);
 
         runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" \
         "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
