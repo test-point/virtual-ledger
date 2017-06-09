@@ -78,16 +78,15 @@ function attemptLogin($abn, $token)
         session()->put('abn', $abn);
         session()->put('token', $token);
 
+        //export user keys
+        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/public_' . $abn . '.key'));
+        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/' . $abn . '_fingerprint.key'));
+
         //upload user public key to dcp
         $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . $abn . '_fingerprint.key')))[1])[0]);
         $apiRequest = new \ApiRequest();
         $token = $apiRequest->getNewTokenForCustomer(Auth::user()->customer_id);
         $apiRequest->sendSenderPublicKey($abn, $fingerprint, $token['id_token']);
-
-        //export user keys
-        runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/public_' . $abn . '.key'));
-        runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/' . $abn . '_fingerprint.key'));
-
 
         return redirect()->intended('transactions');
     }

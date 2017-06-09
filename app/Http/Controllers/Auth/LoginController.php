@@ -76,6 +76,7 @@ class LoginController extends Controller
             $token = (new Parser())->parse((string)$request->get('token'));
             $data = new ValidationData();
             $data->setIssuer('https://idp.testpoint.io');
+            //accept only virtual ledger tokens
             $data->setAudience('430546');
 
             if ($token->validate($data)) {
