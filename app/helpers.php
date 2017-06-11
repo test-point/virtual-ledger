@@ -82,6 +82,15 @@ function attemptLogin($abn, $token)
         runConsoleCommand('gpg2 --armor --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/public_' . $abn . '.key'));
         runConsoleCommand('gpg2 --fingerprint urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . ' > ' . resource_path('data/keys/' . $abn . '_fingerprint.key'));
 
+         //get user's fingerprint
+        $gnupg = gnupg_init();
+        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $abn . '.key')));
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!empty($info['fingerprint'])) {
+            $user->fingerprint = $info['fingerprint'];
+            $user->save();
+        }
+
         //upload user public key to dcp
         $fingerprint = str_replace(' ', '', explode(PHP_EOL, explode('Key fingerprint = ', file_get_contents(resource_path('data/keys/' . $abn . '_fingerprint.key')))[1])[0]);
         $apiRequest = new \ApiRequest();

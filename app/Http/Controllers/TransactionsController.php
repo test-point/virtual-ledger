@@ -133,10 +133,9 @@ class TransactionsController extends Controller
         file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
 
         file_put_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key'), $receiverPublicKey);
-        //import receiver public key
 
+        //import receiver public key
         $gnupg = gnupg_init();
-//        runConsoleCommand('gpg2 --import ' . resource_path('data/keys/receiver_' . $receiverAbn . '.key'));
         $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key')));
         $receiverFilgerprint = $info['fingerprint'];
 
@@ -145,36 +144,18 @@ class TransactionsController extends Controller
         $senderFilgerprint = $info['fingerprint'];
 
 
-//        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
-//                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
-//                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
-//        );
+        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
+                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
+                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
+        );
 
-        $gnupg = new \gnupg();
-        $gnupg->addsignkey($senderFilgerprint);
-        $gnupg->setsignmode(\gnupg::SIG_MODE_DETACH);
-        $signed = $gnupg->sign(file_get_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json')));
-        file_put_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.json'), $signed);
-
-
-//        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
-        $verify = $gnupg->verify($signed, $senderFilgerprint);
-
-        return response()->json([
-            'reveiver' => $receiverAbn,
-            'receiverFilgerprint' => $receiverFilgerprint,
-            'sender' => $senderAbn,
-            'senderFilgerprint' => $senderFilgerprint,
-            'signed' => $signed,
-            'verify' => $verify
-        ], 422);
+        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
         runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" \
         "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
 
         runConsoleCommand('gpg2 --trust-model always --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
-          --recipient "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '" ' .
-            resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
+          --recipient "'.$receiverFilgerprint.'" ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
         $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.hash')))[1]);
         $message = [
@@ -186,7 +167,7 @@ class TransactionsController extends Controller
 
         file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($message, JSON_PRETTY_PRINT));
 
-        runConsoleCommand('gpg2 --local-user "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '" \
+        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
         --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' \
         --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
 

@@ -55,6 +55,9 @@ Dependencies:
 `sudo apt-get install gnupg2 -y`
  
 2) rng-tools
+
+3) http://php.net/manual/ru/gnupg.installation.php
+
 ```
 sudo apt-get install rng-tools
 vi /etc/default/rng-tools
