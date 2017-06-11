@@ -86,7 +86,6 @@ function attemptLogin($abn, $token)
          //get user's fingerprint
         $gnupg = gnupg_init();
         $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $abn . '.key')));
-        dd($info);
         $user = \Illuminate\Support\Facades\Auth::user();
         if (!empty($info['fingerprint'])) {
             $user->fingerprint = $info['fingerprint'];
