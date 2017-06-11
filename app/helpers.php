@@ -53,6 +53,7 @@ function createNewUser($abn, $partisipantsIds)
             'abn_name' => $abnData['attributes']['extra_data']['name'] ?? 'No ABR entry',
             'customer_id' => $newCustomerData['uuid'],
             'password' => bcrypt($abn),
+            'fingerprint' => ''
         ]);
         //create new endpoint for user
         $gwToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 945682);
@@ -85,6 +86,7 @@ function attemptLogin($abn, $token)
          //get user's fingerprint
         $gnupg = gnupg_init();
         $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $abn . '.key')));
+        dd($info);
         $user = \Illuminate\Support\Facades\Auth::user();
         if (!empty($info['fingerprint'])) {
             $user->fingerprint = $info['fingerprint'];
