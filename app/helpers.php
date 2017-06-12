@@ -47,14 +47,18 @@ function createNewUser($abn, $partisipantsIds)
         $newCustomerData = ($apiRequest->createNewCustomer($partisipantsIds));
 
         $abnData = \CompanyBookAPI::searchByAbn($abn);
-        \App\User::create([
-            'name' => $abn,
-            'email' => $abn,
-            'abn_name' => $abnData['attributes']['extra_data']['name'] ?? 'No ABR entry',
-            'customer_id' => $newCustomerData['uuid'],
-            'password' => bcrypt($abn),
-            'fingerprint' => ''
-        ]);
+        try {
+            \App\User::create([
+                'name' => $abn,
+                'email' => $abn,
+                'abn_name' => $abnData['attributes']['extra_data']['name'] ?? 'No ABR entry',
+                'customer_id' => $newCustomerData['uuid'],
+                'password' => bcrypt($abn),
+                'fingerprint' => ''
+            ]);
+        } catch (Exception $e){
+            Log::debug('Create user error: ' . $e->getMessage());
+        }
         //create new endpoint for user
         $gwToken = $apiRequest->getNewTokenForCustomer($newCustomerData['uuid'], 945682);
         $endpoint = $apiRequest->createEndpoint($abn, $gwToken['id_token']);
