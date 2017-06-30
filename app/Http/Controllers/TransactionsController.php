@@ -145,7 +145,8 @@ class TransactionsController extends Controller
 
 
         runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
-                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"'
+                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
+                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
         );
 
         runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
