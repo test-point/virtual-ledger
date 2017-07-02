@@ -102,6 +102,12 @@ function attemptLogin($abn, $token)
         $token = $apiRequest->getNewTokenForCustomer(Auth::user()->customer_id);
         $apiRequest->sendSenderPublicKey($abn, $fingerprint, $token['id_token']);
 
+        //todo remove this
+        $gwToken = $apiRequest->getNewTokenForCustomer($user->customer_id, 945682);
+        $endpoint = $apiRequest->createEndpoint($abn, $gwToken['id_token']);
+        $dcpToken = $apiRequest->getNewTokenForCustomer($user->customer_id, 274953);
+        $apiRequest->createServiceMetadata($endpoint, $dcpToken['id_token'], $abn);
+
         return redirect()->intended('transactions');
     }
     return false;

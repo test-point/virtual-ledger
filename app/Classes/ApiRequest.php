@@ -286,19 +286,19 @@ class ApiRequest
     public function createServiceMetadata($endpoint, $token, $abn)
     {
         $processes = [
-            'invoice',
-            'adjustment',
-            'rcti',
-            'taxreceipt',
-            'creditnote',
-            'debitnote',
+            'bill-invoice-v1',
+            'bill-rcti-v1',
+            'bill-adjustment-v1',
+            'bill-taxreceipt-v1',
+            'bill-creditnote-v1',
+            'bill-debitnote-v1',
         ];
         $requestData = [
             'ProcessList' => [],
             'DocumentIdentifier' => [
-                'scheme' => 'dbc',
-                'value' => 'core-invoice',
-                'id' => 'dbc::core-invoice',
+                'scheme' => 'bdx-docid-qns',
+                'value' => 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+                'id' => 'bdx-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
             ],
             'ParticipantIdentifier' => [
                 'scheme' => 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151',
@@ -308,7 +308,7 @@ class ApiRequest
         foreach($processes as $process){
             $requestData['ProcessList'][] = [
                 'ProcessIdentifier' => [
-                    'scheme' => 'dbc',
+                    'scheme' => 'digitalbusinesscouncil.com.au',
                     'value' => $process,
                 ],
                 'ServiceEndpointList' => [
@@ -337,6 +337,6 @@ class ApiRequest
             'body' => json_encode($requestData)
         ];
 
-        return $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/dbc::core-invoice", $headers);
+        return $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/bdx-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:Invoice-2", $headers);
     }
 }
