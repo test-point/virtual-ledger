@@ -285,58 +285,65 @@ class ApiRequest
 
     public function createServiceMetadata($endpoint, $token, $abn)
     {
-        $processes = [
-            'bill-invoice-v1',
-            'bill-rcti-v1',
-            'bill-adjustment-v1',
-            'bill-taxreceipt-v1',
-            'bill-creditnote-v1',
-            'bill-debitnote-v1',
-        ];
-        $requestData = [
-            'ProcessList' => [],
-            'DocumentIdentifier' => [
-                'scheme' => 'bdx-docid-qns',
-                'value' => 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
-                'id' => 'bdx-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+        $data = [
+            'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2' => [
+                'bill-invoice-v1',
+                'bill-rcti-v1',
+                'bill-adjustment-v1',
+                'bill-taxreceipt-v1',
+                'bill-creditnote-v1',
+                'bill-debitnote-v1',
             ],
-            'ParticipantIdentifier' => [
-                'scheme' => 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151',
-                'value' => $abn
+            'urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2' => [
+                'bill-response-v1'
             ]
         ];
-        foreach($processes as $process){
-            $requestData['ProcessList'][] = [
-                'ProcessIdentifier' => [
-                    'scheme' => 'digitalbusinesscouncil.com.au',
-                    'value' => $process,
-                ],
-                'ServiceEndpointList' => [
-                    [
-                        'ServiceActivationDate' => Carbon::now()->format('Y-m-d'),
-                        'Certificate' => '123',
-                        'EndpointURI' => "http://tap-gw.testpoint.io/api/endpoints/$endpoint/message/",
-                        'transportProfile' => 'TBD',
-                        'ServiceExpirationDate' => Carbon::now()->addYears(1)->format('Y-m-d'),
-                        'RequireBusinessLevelSignature' => "false",
-                        'TechnicalInformationUrl' => '123',
-                        'MinimumAuthenticationLevel' => '0',
-                        'ServiceDescription' => '123',
 
-                    ]
+        foreach($data as $documentIdentifier => $processes) {
+            $requestData = [
+                'ProcessList' => [],
+                'DocumentIdentifier' => [
+                    'scheme' => 'bdx-docid-qns',
+                    'value' => $documentIdentifier,
+                    'id' => 'bdx-docid-qns::' . $documentIdentifier,
+                ],
+                'ParticipantIdentifier' => [
+                    'scheme' => 'urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151',
+                    'value' => $abn
                 ]
             ];
+            foreach ($processes as $process) {
+                $requestData['ProcessList'][] = [
+                    'ProcessIdentifier' => [
+                        'scheme' => 'digitalbusinesscouncil.com.au',
+                        'value' => $process,
+                    ],
+                    'ServiceEndpointList' => [
+                        [
+                            'ServiceActivationDate' => Carbon::now()->format('Y-m-d'),
+                            'Certificate' => '123',
+                            'EndpointURI' => "http://tap-gw.testpoint.io/api/endpoints/$endpoint/message/",
+                            'transportProfile' => 'TBD',
+                            'ServiceExpirationDate' => Carbon::now()->addYears(1)->format('Y-m-d'),
+                            'RequireBusinessLevelSignature' => "false",
+                            'TechnicalInformationUrl' => '123',
+                            'MinimumAuthenticationLevel' => '0',
+                            'ServiceDescription' => '123',
+
+                        ]
+                    ]
+                ];
+            }
+              $headers = [
+                'headers' => [
+                    'Authorization' => 'JWT ' . $token,
+                    'Accept' => 'application/json; indent=4',
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => json_encode($requestData)
+            ];
+            $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/bdx-docid-qns::" . $documentIdentifier, $headers);
         }
-
-        $headers = [
-            'headers' => [
-                'Authorization' => 'JWT ' . $token,
-                'Accept' => 'application/json; indent=4',
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($requestData)
-        ];
-
-        return $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/bdx-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:Invoice-2", $headers);
+        return true;
     }
 }
