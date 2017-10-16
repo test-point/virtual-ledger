@@ -124,9 +124,21 @@ class TransactionsController extends Controller
         $senderAbn = session('abn');
         $receiverAbn = $request->get('receiver_abn');
 
+        $messageArray = json_decode($message, true);
+
+        $conversationId = $senderAbn.'/'.$messageArray['Invoice']['id'];
+
+        $validator = Validator::make(['conversation_id' => $conversationId], [
+            'conversation_id' => 'unique:transactions,conversation_id'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['document' => ['You already have a conversation with this message id']], 422);
+        }
+
         $transaction = Transaction::create([
             'from_party' => $senderAbn,
             'to_party' => $receiverAbn,
+            'conversation_id' => $conversationId
         ]);
 
         //save json to file
@@ -161,7 +173,7 @@ class TransactionsController extends Controller
         $message = [
             'cyphertext' => file_get_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg')),
             'hash' => $hash,
-            'reference' => "",
+            'reference' => $conversationId,
             'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $senderAbn
         ];
 

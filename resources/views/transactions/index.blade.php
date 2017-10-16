@@ -23,8 +23,8 @@
                         <table class="table table-stripped text-center">
                             <tr>
                                 <td>Timestamp</td>
-                                <td>From</td>
-                                <td>To</td>
+                                <td>Conversation id</td>
+                                <td>From<br>To</td>
                                 <td>Message Hash</td>
                                 <td>Notarized Message</td>
                                 <td>Payloads</td>
@@ -35,8 +35,9 @@
                                 @foreach($transactions as $transaction)
                                     <tr>
                                         <td>{{ $transaction->created_at }}</td>
-                                        <td>{{ $transaction->from_party }}</td>
-                                        <td>{{ $transaction->to_party }}</td>
+                                        <td>{{ $transaction->conversation_id }}</td>
+                                        <td>{{ $transaction->from_party }}<br>{{ $transaction->to_party }}</td>
+                                        {{--<td>{{ $transaction->to_party }}</td>--}}
                                         <td>
                                             <span title="{{ $transaction->message_hash }}"></span>
 

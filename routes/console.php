@@ -57,6 +57,7 @@ use Illuminate\Foundation\Inspiring;
                     $messageBody = $tapGw->getMessageBody($message['id']);
 
                     $transactionData['message_hash'] = $messageBody['hash'];
+                    $transactionData['conversation_id'] = $messageBody['reference'];
                     $transactionData['message_id'] = $message['id'];
                     $transactionData['from_party'] = str_replace('urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::', '', $messageBody['sender']);
                     $transaction = \App\Transaction::create($transactionData);
