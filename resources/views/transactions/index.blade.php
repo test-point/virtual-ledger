@@ -20,84 +20,105 @@
 
                     <div class="panel-body">
 
-                        <table class="table table-stripped text-center">
-                            <tr>
-                                <td>Timestamp</td>
-                                <td>Conversation id</td>
-                                <td>From<br>To</td>
-                                <td>Message Hash</td>
-                                <td>Notarized Message</td>
-                                <td>Payloads</td>
-                                <td>Message Type</td>
-                                <td>Validation Status</td>
-                            </tr>
-                            @if(count($transactions))
-                                @foreach($transactions as $transaction)
-                                    <tr>
-                                        <td>{{ $transaction->created_at }}</td>
-                                        <td>{{ $transaction->conversation_id }}</td>
-                                        <td>{{ $transaction->from_party }}<br>{{ $transaction->to_party }}</td>
-                                        {{--<td>{{ $transaction->to_party }}</td>--}}
-                                        <td>
-                                            <span title="{{ $transaction->message_hash }}"></span>
-
-                                            <a class="btn" data-toggle="modal" data-target="#messageHashModal{{ $transaction->id }}">
-                                                {{ substr($transaction->message_hash, 0, 10) }}
+                        @foreach($conversations as $conversation)
+                            <?php $transactions = \App\Transaction::where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->orderby('id', 'desc')->get();?>
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="heading{{ $conversation->id }}">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{ $conversation->id }}" aria-expanded="true" aria-controls="collapse{{ $conversation->id }}">
+                                                <b>{{ $conversation->conversation_id }}</b> - {{ count($transactions) }} message(s)
                                             </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapse{{ $conversation->id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ $conversation->id }}">
+                                        <div class="panel-body">
+                                           <table class="table table-stripped text-center">
+                                                <tr>
+                                                    <td>Timestamp</td>
+                                                    <td>From</td>
+                                                    <td>To</td>
+                                                    <td>Message Hash</td>
+                                                    <td>Notarized Message</td>
+                                                    <td>Payloads</td>
+                                                    <td>Message Type</td>
+                                                    <td>Validation Status</td>
+                                                </tr>
+                                                @if(count($transactions))
+                                                    @foreach($transactions as $transaction)
+                                                        <tr>
+                                                            <td>{{ $transaction->created_at }}</td>
+                                                            <td>{{ $transaction->from_party }}</td>
+                                                            <td>{{ $transaction->to_party }}</td>
+                                                            <td>
+                                                                <span title="{{ $transaction->message_hash }}"></span>
 
-                                            <!-- Modal -->
-                                            <div class="modal fade" id="messageHashModal{{ $transaction->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                            <h4 class="modal-title" id="myModalLabel">Message hash</h4>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                           {{ $transaction->message_hash }}
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                                                <a class="btn" data-toggle="modal" data-target="#messageHashModal{{ $transaction->id }}">
+                                                                    {{ substr($transaction->message_hash, 0, 6) }}
+                                                                </a>
 
-                                        <td>
-                                            @if($transaction->validation_status == 'sent' && file_exists(resource_path('data/keys/' . $transaction->id . '_message.json')))
-                                                <a href="/download/{{ $transaction->id . '_message.json' }}" target="_blank">Download</a>
-                                            @endif
-                                        </td>
+                                                                <!-- Modal -->
+                                                                <div class="modal fade" id="messageHashModal{{ $transaction->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                                                    <div class="modal-dialog" role="document">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                                                                                </button>
+                                                                                <h4 class="modal-title" id="myModalLabel">Message hash</h4>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                               {{ $transaction->message_hash }}
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
 
-                                        <td>
-                                            @if($transaction->encripted_payload)
-                                                <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
-                                            @endif
-                                            <br>
-                                            @if($transaction->decripted_payload && file_exists(resource_path('data/keys/' . $transaction->decripted_payload)))
-                                                <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
-                                            @endif
-                                        </td>
-                                        <td>{{ $transaction->message_type }}</td>
-                                        <td>
-                                            <span>{{ $transaction->validation_status }}</span>
-                                            @if($transaction->validation_status == 'error')
-                                                <br>({{ $transaction->validation_message }})
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td class="text-center" colspan="8">No transactions yet</td>
-                                </tr>
-                            @endif
-                        </table>
-                        <div class="pagination-wrapper">
-                            {{ $transactions->appends($_GET)->render() }}
-                        </div>
+                                                            <td>
+                                                                @if($transaction->validation_status == 'sent' && file_exists(resource_path('data/keys/' . $transaction->id . '_message.json')))
+                                                                    <a href="/download/{{ $transaction->id . '_message.json' }}" target="_blank">Download</a>
+                                                                @endif
+                                                            </td>
+
+                                                            <td>
+                                                                @if($transaction->encripted_payload)
+                                                                    <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
+                                                                @endif
+                                                                <br>
+                                                                @if($transaction->decripted_payload && file_exists(resource_path('data/keys/' . $transaction->decripted_payload)))
+                                                                    <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $transaction->message_type }}</td>
+                                                            <td>
+                                                                <span>{{ $transaction->validation_status }}</span>
+                                                                @if($transaction->validation_status == 'error')
+                                                                    <br>({{ $transaction->validation_message }})
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @else
+                                                    <tr>
+                                                        <td class="text-center" colspan="8">No transactions yet</td>
+                                                    </tr>
+                                                @endif
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                        @if(false)
+
+
+                            <div class="pagination-wrapper">
+                                {{ $transactions->appends($_GET)->render() }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

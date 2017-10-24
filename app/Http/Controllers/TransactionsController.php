@@ -22,8 +22,8 @@ class TransactionsController extends Controller
     public function index(Request $request)
     {
         $documentIds = $endpoints = false;
-        $transactions = Transaction::where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->orderby('id', 'desc')->paginate(25);
-        return view('transactions.index', compact('transactions', 'endpoints', 'documentIds', 'request'));
+        $conversations = Transaction::where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->orderby('id', 'desc')->groupBy('conversation_id')->groupBy('id')->paginate(25);
+        return view('transactions.index', compact('conversations', 'endpoints', 'documentIds', 'request'));
     }
 
     /**
