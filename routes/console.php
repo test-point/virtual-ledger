@@ -56,20 +56,23 @@ use Illuminate\Foundation\Inspiring;
                     $transactionData['updated_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
                     $messageBody = $tapGw->getMessageBody($message['id']);
 
-                    $transactionData['message_hash'] = $messageBody['hash'];
-                    $transactionData['conversation_id'] = $messageBody['reference'];
-                    $transactionData['message_id'] = $message['id'];
-                    $transactionData['from_party'] = str_replace('urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::', '', $messageBody['sender']);
-                    $transaction = \App\Transaction::create($transactionData);
-                    file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
-                    file_put_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'), @$messageBody['cyphertext']);
+                    if(!empty($messageBody['reference'])) {
 
-                    //todo remove hardcoded homedir value
-                    runConsoleCommand('gpg2 --homedir /var/www/.gnupg --local-user "'.$user->fingerprint.'" -o '. resource_path('data/keys/' . $transaction->id . '_initial_message.json') .' -d ' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'));
+                        $transactionData['message_hash'] = $messageBody['hash'];
+                        $transactionData['conversation_id'] = $messageBody['reference'];
+                        $transactionData['message_id'] = $message['id'];
+                        $transactionData['from_party'] = str_replace('urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::', '', $messageBody['sender']);
+                        $transaction = \App\Transaction::create($transactionData);
+                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
+                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'), @$messageBody['cyphertext']);
 
-                    $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
-                    $transaction->decripted_payload = $transaction->id . '_initial_message.json';
-                    $transaction->save();
+                        //todo remove hardcoded homedir value
+                        runConsoleCommand('gpg2 --homedir /var/www/.gnupg --local-user "' . $user->fingerprint . '" -o ' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . ' -d ' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'));
+
+                        $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
+                        $transaction->decripted_payload = $transaction->id . '_initial_message.json';
+                        $transaction->save();
+                    }
                 }
             }
         }
