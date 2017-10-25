@@ -21,17 +21,20 @@
                     <div class="panel-body">
 
                         @foreach($conversations as $conversation)
-                            <?php $transactions = \App\Transaction::where('conversation_id', $conversation->conversation_id)->orderby('id', 'desc')->get();?>
+                            <?php
+                                $transactions = \App\Transaction::where('conversation_id', $conversation->conversation_id)->orderby('id', 'desc')->get();
+                                $collapsableId = md5($conversation->conversation_id);
+                            ?>
                             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                                 <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="heading{{ $conversation->id }}">
+                                    <div class="panel-heading" role="tab" id="heading{{ $collapsableId }}">
                                         <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{ $conversation->id }}" aria-expanded="true" aria-controls="collapse{{ $conversation->id }}">
+                                            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{ $collapsableId }}" aria-expanded="true" aria-controls="collapse{{ $collapsableId }}">
                                                 <b>{{ $conversation->conversation_id }}</b> - {{ count($transactions) }} message(s)
                                             </a>
                                         </h4>
                                     </div>
-                                    <div id="collapse{{ $conversation->id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ $conversation->id }}">
+                                    <div id="collapse{{ $collapsableId }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ $collapsableId }}">
                                         <div class="panel-body">
                                            <table class="table table-stripped text-center">
                                                 <tr>
