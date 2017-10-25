@@ -21,7 +21,10 @@
                     <div class="panel-body">
 
                         @foreach($conversations as $conversation)
-                            <?php $transactions = \App\Transaction::where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->orderby('id', 'desc')->get();?>
+                            <?php $transactions = \App\Transaction::where('from_party', Auth::user()->abn)
+                                ->orWhere(['to_party' => Auth::user()->abn, 'validation_status' => 'sent'])
+                                ->where('conversation_id', $conversation->conversation_id)
+                                ->orderby('id', 'desc')->get();?>
                             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="heading{{ $conversation->id }}">
