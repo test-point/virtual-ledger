@@ -22,7 +22,7 @@ class TransactionsController extends Controller
     public function index(Request $request)
     {
         $documentIds = $endpoints = false;
-        $conversations = Transaction::select('conversation_id')->where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->groupBy(['conversation_id'])->paginate(25);
+        $conversations = Transaction::select('conversation_id')->where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->groupBy(['conversation_id'])->orderBy('updated_at', 'DESC')->paginate();
         return view('transactions.index', compact('conversations', 'endpoints', 'documentIds', 'request'));
     }
 
