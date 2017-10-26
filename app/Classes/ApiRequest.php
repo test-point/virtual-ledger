@@ -3,18 +3,21 @@
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ApiRequest
 {
 
     private $client;
     private $token;
+    private $servicesUrl;
 
     public function __construct()
     {
         $this->client = new Client();
         $this->token = session('token');
-        $this->idpDevToken = '18c2b0ab927d8a3c9bf9ef78419a8f6d4535e47f';
+        $this->idpDevToken = config('env_vars.idp_dev_token');
+        $this->servicesUrl = config('env_vars.services_url');
     }
 
     /**
@@ -26,7 +29,7 @@ class ApiRequest
     public function getReceiverPublicKey($receiverAbn, $token)
     {
         $data = [];
-        $response = (array) $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
+        $response = (array) $this->makeRequest('GET', 'https://dcp.'.$this->servicesUrl.'/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $receiverAbn . '/keys/', $data);
         if(!empty($response)) {
             $response = array_filter($response, function ($entry) {
                 return empty($entry['revoked']) || Carbon::now()->lt(Carbon::parse($entry['revoked']));
@@ -52,12 +55,12 @@ class ApiRequest
                 'Content-Type' => 'application/json',
             ],
             'body' => json_encode([
-                'pubKey' => file_get_contents(resource_path('data/keys/public_'.$senderAbn.'.key')),
+                'pubKey' => \Illuminate\Support\Facades\Storage::get('keys/public_'.$senderAbn.'.key'),
                 'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
         ];
-        $url = 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/';
+        $url = 'https://dcp.'.$this->servicesUrl.'/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/';
         $requestType = 'POST';
         if($this->getKeyByFingerprint($senderAbn, $fingerprint)){
             $requestType = 'PATCH';
@@ -68,19 +71,8 @@ class ApiRequest
 
     public function getKeyByFingerprint($senderAbn, $fingerprint)
     {
-        return $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/' . $fingerprint, []);
+        return $this->makeRequest('GET', 'https://dcp.'.$this->servicesUrl.'/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $senderAbn . '/keys/' . $fingerprint, []);
     }
-
-//    public function getKeys($abn, $token)
-//    {
-//        $data = [
-//            'headers' => [
-//                'Authorization' => 'JWT ' . $token,
-//                'Content-Type' => 'application/json',
-//            ],
-//        ];
-//        return $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/keys/', $data);
-//    }
 
     /**
      * Send new message to tap-gw
@@ -93,19 +85,26 @@ class ApiRequest
      */
     public function sendMessage($endpoint, $message, $signature)
     {
+        $messageFile = md5($message);
+        $signatureFile = md5($signature);
+        Storage::put($messageFile, $message);
+        Storage::put($signatureFile, $signature);
         $data = [
             'multipart' => [
                 [
                     'name' => 'signature',
-                    'contents' => fopen($signature, 'r')
+                    'contents' => fopen(storage_path('app/' . $signatureFile), 'r')
                 ],
                 [
                     'name' => 'message',
-                    'contents' => fopen($message, 'r')
+                    'contents' => fopen(storage_path('app/' . $messageFile), 'r')
                 ],
             ]
         ];
-        return $this->makeRequest('POST', $endpoint, $data, false);
+        $response = $this->makeRequest('POST', $endpoint, $data, false);
+//        Storage::delete($messageFile);
+//        Storage::delete($signatureFile);
+        return $response;
     }
 
     /**
@@ -122,7 +121,7 @@ class ApiRequest
                 'Authorization' => 'Token ' . $this->idpDevToken
             ]
         ];
-        return $this->makeRequest('GET', 'https://tap-gw.testpoint.io/api/messages/'.$messageId.'/status/', $headers);
+        return $this->makeRequest('GET', 'https://tap-gw.'.$this->servicesUrl.'/api/messages/'.$messageId.'/status/', $headers);
     }
 
      /**
@@ -144,20 +143,9 @@ class ApiRequest
                 'status' => $status,
             ])
         ];
-        return $this->makeRequest('GET', 'https://tap-gw.testpoint.io/api/messages/', $headers);
+        return $this->makeRequest('GET', 'https://tap-gw.'.$this->servicesUrl.'/api/messages/', $headers);
     }
 
-    /**
-     * Generate message endpoint url
-     *
-     * @param string $endpointId
-     *
-     * @return string
-     */
-    private function getMessagesEndpoint($endpointId)
-    {
-        return 'http://tap-gw.testpoint.io/api/endpoints/' . $endpointId . '/message/';
-    }
 
     /**
      * Perform request to remote API
@@ -203,17 +191,6 @@ class ApiRequest
         return $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/', $headers);
     }
 
-//    public function getCustomer($customerId)
-//    {
-//        $headers = [
-//            'headers' => [
-//                'Authorization' => 'Token ' . $this->idpDevToken,
-//                'Accept' => 'application/json; indent=4',
-//            ]
-//        ];
-//        return $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId, $headers);
-//    }
-
     /**
      * Generate new token for customer
      *
@@ -224,29 +201,24 @@ class ApiRequest
      */
     public function getNewTokenForCustomer($customerId, $clientId = '274953')
     {
-//        $cacheKey = 'token_' . $customerId . '_' . $clientId;
-//        $token = cache()->get($cacheKey);
-//        if(!$token) {
         $headers = [
             'headers' => [
                 'Authorization' => 'Token ' . $this->idpDevToken,
                 'Accept' => 'application/json; indent=4',
             ]
         ];
-        $token = $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
-//        cache()->put($cacheKey, $token, Carbon::now()->addSeconds($token['expires_in']));
-        return $token;
+        return $this->makeRequest('POST', 'https://idp-dev.tradewire.io/api/customers/v0/'.$customerId.'/tokens/'.$clientId.'/', $headers);
     }
 
     public function getDocumentIds($abn)
     {
-        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '?format=json');
+        $data = $this->makeRequest('GET', 'https://dcp.'.$this->servicesUrl.'/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '?format=json');
         return $data['ServiceMetadataReferenceCollection'];
     }
 
     public function getEndpoints($abn, $documentId)
     {
-        $data = $this->makeRequest('GET', 'https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . urlencode($documentId) . '?format=json');
+        $data = $this->makeRequest('GET', 'https://dcp.'.$this->servicesUrl.'/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . urlencode($documentId) . '?format=json');
         if(!$data){
             return false;
         }
@@ -257,6 +229,19 @@ class ApiRequest
         }, $data['ProcessList']);
         //multidimensional array to one-dimensional array
         return array_reduce($result, 'array_merge', array());
+    }
+
+    public function getEndpointByProcess($abn, $documentId = 'urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2', $process = 'bill-response-v1')
+    {
+        $data = $this->makeRequest('GET', 'https://dcp.' . $this->servicesUrl . '/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $abn . '/service/' . urlencode('bdx-docid-qns::' . $documentId) . '?format=json');
+        if ($data) {
+            foreach ($data['ProcessList'] as $processData) {
+                if ($process == $processData['ProcessIdentifier']['value']) {
+                    return $processData['ServiceEndpointList'][0]['EndpointURI'];
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -279,7 +264,7 @@ class ApiRequest
                 "participant_id" => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn"
             ])
         ];
-        $response = $this->makeRequest('POST', 'https://tap-gw.testpoint.io/api/endpoints', $headers);
+        $response = $this->makeRequest('POST', 'https://tap-gw.'.$this->servicesUrl.'/api/endpoints', $headers);
         return $response['data']['id'] ?? false;
     }
 
@@ -342,7 +327,7 @@ class ApiRequest
                 ],
                 'body' => json_encode($requestData)
             ];
-            $this->makeRequest('PUT', "https://dcp.testpoint.io/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/bdx-docid-qns::" . $documentIdentifier, $headers);
+            $this->makeRequest('PUT', "https://dcp.".$this->servicesUrl."/urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::$abn/service/bdx-docid-qns::" . urlencode($documentIdentifier), $headers);
         }
         return true;
     }

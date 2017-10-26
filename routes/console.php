@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,11 +64,14 @@ use Illuminate\Foundation\Inspiring;
                         $transactionData['message_id'] = $message['id'];
                         $transactionData['from_party'] = str_replace('urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::', '', $messageBody['sender']);
                         $transaction = \App\Transaction::create($transactionData);
-                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
-                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'), @$messageBody['cyphertext']);
 
-                        //todo remove hardcoded homedir value
-                        runConsoleCommand('gpg2 --homedir /var/www/.gnupg --local-user "' . $user->fingerprint . '" -o ' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . ' -d ' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg'));
+                        $gpgWrapper = new \App\PhpGnupgWrapper($user->abn);
+
+                        $tapMessage = $gpgWrapper->decryptMessage($messageBody['cyphertext'], $user->fingerprint, $user->abn);
+
+                        Storage::put($transaction->id . '_message.json', json_encode($messageBody, JSON_PRETTY_PRINT));
+                        Storage::put($transaction->id . '_cyphertext_signed.gpg', $tapMessage['cyphertext']);
+                        Storage::put($transaction->id . '_initial_message.json', $message);
 
                         $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
                         $transaction->decripted_payload = $transaction->id . '_initial_message.json';

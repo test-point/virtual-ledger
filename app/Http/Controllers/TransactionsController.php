@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\MessageTemplate;
 use App\Transaction;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,8 +22,9 @@ class TransactionsController extends Controller
      */
     public function index(Request $request)
     {
+        $abn = Auth::user()->abn;
         $documentIds = $endpoints = false;
-        $conversations = Transaction::select('conversation_id')->where('from_party', session('abn'))->orWhere(['to_party' => session('abn'), 'validation_status' => 'sent'])->groupBy(['conversation_id'])->orderBy('updated_at', 'DESC')->paginate();
+        $conversations = Transaction::select('conversation_id')->where('from_party', $abn)->orWhere(['to_party' => $abn, 'validation_status' => 'sent'])->groupBy(['conversation_id'])->orderBy('updated_at', 'DESC')->paginate();
         return view('transactions.index', compact('conversations', 'endpoints', 'documentIds', 'request'));
     }
 
@@ -121,7 +123,9 @@ class TransactionsController extends Controller
             }
         }
 
-        $senderAbn = session('abn');
+        $user = Auth::user();
+
+        $senderAbn = $user->abn;
         $receiverAbn = $request->get('receiver_abn');
 
         $messageArray = json_decode($message, true);
@@ -141,54 +145,89 @@ class TransactionsController extends Controller
             'conversation_id' => $conversationId
         ]);
 
-        //save json to file
-        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
+        Storage::put($transaction->id . '_initial_message.json', $message);
 
-        file_put_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key'), $receiverPublicKey);
+//        //save json to file
+//        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
+//
+//        file_put_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key'), $receiverPublicKey);
+//
+//        //import receiver public key
+//        $gnupg = gnupg_init();
+//        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key')));
+//        $receiverFilgerprint = $info['fingerprint'];
+//
+//        $gnupg = gnupg_init();
+//        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $senderAbn . '.key')));
+//        $senderFilgerprint = $info['fingerprint'];
+//
+//
+//        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
+//                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
+//                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
+//        );
+//
+//        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
+//
+//        runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" \
+//        "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
+//
+//        runConsoleCommand('gpg2 --trust-model always --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
+//          --recipient "'.$receiverFilgerprint.'" ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
+//
+//        $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.hash')))[1]);
+//        $message = [
+//            'cyphertext' => file_get_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg')),
+//            'hash' => $hash,
+//            'reference' => $conversationId,
+//            'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $senderAbn
+//        ];
+//
+//        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($message, JSON_PRETTY_PRINT));
+//
+//        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
+//        --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' \
+//        --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
 
-        //import receiver public key
-        $gnupg = gnupg_init();
-        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/receiver_' . $receiverAbn . '.key')));
-        $receiverFilgerprint = $info['fingerprint'];
-
-        $gnupg = gnupg_init();
-        $info = gnupg_import($gnupg, file_get_contents(resource_path('data/keys/public_' . $senderAbn . '.key')));
-        $senderFilgerprint = $info['fingerprint'];
 
 
-        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
-                        --output "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '" \
-                        --clearsign "' . resource_path('data/keys/' . $transaction->id . '_initial_message.json') . '"'
-        );
 
-        runConsoleCommand('gpg2 --verify ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
 
-        runConsoleCommand('openssl dgst -sha256 -out "' . resource_path('data/keys/' . $transaction->id . '_signed_file.hash') . '" \
-        "' . resource_path('data/keys/' . $transaction->id . '_signed_file.json') . '"');
+        $apiRequest = new \ApiRequest();
+        $token = $apiRequest->getNewTokenForCustomer($user->customer_id);
+        $receiverPublicKey = (new \ApiRequest())->getReceiverPublicKey($receiverAbn, $token['id_token'])['pubKey'];
+        $gpg = new \App\PhpGnupgWrapper($user->abn);
+        $info = $gpg->importKey($receiverPublicKey);
 
-        runConsoleCommand('gpg2 --trust-model always --armour --output "' . resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg') . '" --encrypt \
-          --recipient "'.$receiverFilgerprint.'" ' . resource_path('data/keys/' . $transaction->id . '_signed_file.json'));
-
-        $hash = trim(explode(' ', file_get_contents(resource_path('data/keys/' . $transaction->id . '_signed_file.hash')))[1]);
-        $message = [
-            'cyphertext' => file_get_contents(resource_path('data/keys/' . $transaction->id . '_cyphertext_signed.gpg')),
-            'hash' => $hash,
-            'reference' => $conversationId,
-            'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $senderAbn
+        $receiverInfo = [
+            'abn' => $receiverAbn,
+            'fingerprint' => $info['fingerprint']
         ];
 
-        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($message, JSON_PRETTY_PRINT));
-
-        runConsoleCommand('gpg2 --local-user "'.$senderFilgerprint.'" \
-        --output ' . resource_path('data/keys/' . $transaction->id . '_message.json.sig') . ' \
-        --detach-sign ' . resource_path('data/keys/' . $transaction->id . '_message.json'));
+        $senderInfo = [
+            'abn' => $user->abn,
+            'fingerprint' => $user->fingerprint
+        ];
+        
+        $tapMessage = $gpg->generateMessage($message, $receiverInfo, $senderInfo, $conversationId);
 
         $apiResponse = $apiRequest->sendMessage($request->get('endpoint'),
-            resource_path('data/keys/' . $transaction->id . '_message.json'),
-            resource_path('data/keys/' . $transaction->id . '_message.json.sig')
+            $tapMessage['message'],
+            $tapMessage['signature']
         );
 
-        $transaction->message_hash = $hash;
+        Storage::put($transaction->id . '_cyphertext_signed.gpg', $tapMessage['cyphertext']);
+
+        $message = [
+            'cyphertext' => $tapMessage['cyphertext'],
+            'hash' => $tapMessage['hash'],
+            'reference' => $conversationId,
+            'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $user->abn
+        ];
+
+        Storage::put($transaction->id . '_message.json', json_encode($message, JSON_PRETTY_PRINT));
+
+        $transaction->message_hash = $tapMessage['hash'];
         $transaction->message_id = $apiResponse['data']['id'];
         $transaction->message_type = $apiResponse['data']['type'];
         $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
@@ -213,6 +252,6 @@ class TransactionsController extends Controller
      */
     public function download($filename)
     {
-        return response()->download(resource_path('data/keys/' . $filename), $filename);
+        return response()->download(storage_path('app/' . $filename), $filename);
     }
 }

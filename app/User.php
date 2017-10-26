@@ -14,9 +14,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = [
-        'name', 'email', 'password', 'customer_id', 'abn_name', 'fingerprint'
-    ];
+    protected $guarded = ['id'];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -30,5 +28,10 @@ class User extends Authenticatable
     public function transactions()
     {
         return $this->hasMany(\App\Transaction::class);
+    }
+
+     public function sshKeys()
+    {
+        return $this->hasOne(\App\SshKeys::class);
     }
 }
