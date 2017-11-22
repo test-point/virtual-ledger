@@ -106,3 +106,8 @@ function attemptLogin($abn, $token)
     }
     return false;
 }
+
+function isHttps()
+{
+    return 'local' != env('APP_ENV');
+}
