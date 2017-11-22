@@ -32,17 +32,22 @@ class SocialController extends Controller
             $userInfo = (array)$oidc->requestUserInfo();
             $token = $oidc->getIdToken();
 
-            if(empty($userInfo['abn'])){
+            if (empty($userInfo['abn'])) {
                 return redirect('login')
                     ->with('error', 'Please <a href="https://idp.testpoint.io/allauth/logout/" target="_blank">login</a> with correct ABN account!');
             }
 
             createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
             return attemptLogin($userInfo['abn'], $token);
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
+            dump($_REQUEST);
+            dump($_SESSION);
+            dump(request());
+            dump(session());
             Log::error($e->getMessage());
             Log::error($e->getFile());
             Log::error($e->getLine());
+            dd('1');
             return redirect()->intended('login');
         }
     }

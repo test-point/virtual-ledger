@@ -24,7 +24,15 @@ class TransactionsController extends Controller
     {
         $abn = Auth::user()->abn;
         $documentIds = $endpoints = false;
-        $conversations = Transaction::select('conversation_id')->where('from_party', $abn)->orWhere(['to_party' => $abn, 'validation_status' => 'sent'])->groupBy(['conversation_id'])->orderBy('updated_at', 'DESC')->paginate();
+        $conversations = Transaction::select('conversation_id')
+            ->where(function ($query) use ($abn) {
+                $query->where('from_party', $abn);
+                $query->orWhere(function ($query1) use ($abn) {
+                    $query1->where('to_party', $abn);
+                    $query1->where('validation_status', 'sent');
+                });
+            })
+            ->groupBy(['conversation_id'])->orderBy('updated_at', 'DESC')->paginate();
         return view('transactions.index', compact('conversations', 'endpoints', 'documentIds', 'request'));
     }
 
