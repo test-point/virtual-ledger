@@ -7,7 +7,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Login via idp.testpoint.io</div>
                     <div class="panel-body text-center">
-                        <a href="{{ route('social.redirect', ['provider' => 'idp']) }}" class="btn">idp.testpoint.io</a>
+                        <a href="{{ url('social.redirect', ['provider' => 'idp'], isHttps()) }}" class="btn">idp.testpoint.io</a>
                     </div>
                 </div>
             </div>
@@ -22,7 +22,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Login via token</div>
                     <div class="panel-body">
-                        <form id="login-form" class="form-horizontal" role="form" method="POST" action="{{ route('login') }}">
+                        <form id="login-form" class="form-horizontal" role="form" method="POST" action="{{ url('login', [], isHttps()) }}">
                             {{ csrf_field() }}
 
                             <div class="form-group{{ $errors->has('token') ? ' has-error' : '' }}">
