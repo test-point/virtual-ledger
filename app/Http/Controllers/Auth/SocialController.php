@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 
 class SocialController extends Controller
 {
@@ -39,6 +40,9 @@ class SocialController extends Controller
             createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
             return attemptLogin($userInfo['abn'], $token);
         } catch(\Exception $e){
+            Log::error($e->getMessage());
+            Log::error($e->getFile());
+            Log::error($e->getLine());
             return redirect()->intended('login');
         }
     }
