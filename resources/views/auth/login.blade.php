@@ -7,7 +7,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Login via idp.testpoint.io</div>
                     <div class="panel-body text-center">
-                        <a href="{{ url('social.redirect', ['provider' => 'idp'], isHttps()) }}" class="btn">idp.testpoint.io</a>
+                        <a href="{{ url('/social/redirect/idp', [], isHttps()) }}" class="btn">idp.testpoint.io</a>
                     </div>
                 </div>
             </div>
