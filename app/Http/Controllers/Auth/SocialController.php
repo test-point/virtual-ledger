@@ -40,14 +40,9 @@ class SocialController extends Controller
             createNewUser($userInfo['abn'], $userInfo['urn:oasis:names:tc:ebcore:partyid-type:iso6523']);
             return attemptLogin($userInfo['abn'], $token);
         } catch(\Exception $e){
-            dump($_REQUEST);
-            dump($_SESSION);
-            dump(request());
-            dump(session());
             Log::error($e->getMessage());
             Log::error($e->getFile());
             Log::error($e->getLine());
-            dd('1');
             return redirect()->intended('login');
         }
     }
