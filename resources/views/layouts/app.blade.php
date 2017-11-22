@@ -35,7 +35,7 @@
                 </button>
 
                 <!-- Branding Image -->
-                <a class="navbar-brand" href="{{ url('/') }}">
+                <a class="navbar-brand" href="{{ url('/', [], isHttps()) }}">
                     {{ config('app.name', 'Laravel') }}
                 </a>
                  @yield('abn_name')
@@ -52,7 +52,7 @@
                     <!-- Authentication Links -->
                     @if (Auth::guest())
                         @if(!Request::is('login'))
-                            <li><a href="{{ route('login') }}">Login</a></li>
+                            <li><a href="{{ route('login', [], isHttps()) }}">Login</a></li>
                         @endif
                     @else
                         <li class="dropdown">
@@ -62,13 +62,13 @@
 
                             <ul class="dropdown-menu" role="menu">
                                 <li>
-                                    <a href="{{ route('logout') }}"
+                                    <a href="{{ route('logout', [], isHttps()) }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                                         Logout
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                    <form id="logout-form" action="{{ route('logout', [], isHttps()) }}" method="POST" style="display: none;">
                                         {{ csrf_field() }}
                                     </form>
                                 </li>
