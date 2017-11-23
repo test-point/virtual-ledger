@@ -9,6 +9,9 @@ cd /var/www/html
 touch /var/www/html/storage/logs/laravel.log
 chmod 666 /var/www/html/storage/logs/laravel.log
 
+mkdir /var/www/html/storage/app/keys
+chmod 777 /var/www/html/storage/app/keys
+
 chmod 700 .gnupg
 chmod 600 .gnupg/*
 
