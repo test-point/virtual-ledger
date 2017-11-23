@@ -8,17 +8,22 @@ use Illuminate\Support\Facades\Request;
 
 class SocialController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
+            config('services.testpoint.client_id'),
+            config('services.testpoint.client_secret')
+        );
+    }
+
     /**
      * Redirect user to idp
      */
     public function getSocialRedirect(Request $request)
     {
-        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
-            config('services.testpoint.client_id'),
-            config('services.testpoint.client_secret')
-            );
-        $oidc->setRedirectURL(config('services.testpoint.redirect'));
-        $oidc->authenticate();
+        $this->oidc->setRedirectURL(config('services.testpoint.redirect'));
+        $this->oidc->authenticate();
     }
 
     /**
@@ -28,13 +33,9 @@ class SocialController extends Controller
     public function getSocialHandle(Request $request)
     {
         try {
-            $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
-                config('services.testpoint.client_id'),
-                config('services.testpoint.client_secret'));
-
-            $oidc->authenticate();
-            $userInfo = (array)$oidc->requestUserInfo();
-            $token = $oidc->getIdToken();
+            $this->oidc->authenticate();
+            $userInfo = (array)$this->oidc->requestUserInfo();
+            $token = $this->oidc->getIdToken();
 
             if (empty($userInfo['abn'])) {
                 return redirect('login')
