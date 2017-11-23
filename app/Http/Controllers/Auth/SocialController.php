@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
 
 class SocialController extends Controller
 {
     /**
      * Redirect user to idp
      */
-    public function getSocialRedirect()
+    public function getSocialRedirect(Request $request)
     {
-        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io', config('services.testpoint.client_id'));
+        $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
+            config('services.testpoint.client_id'),
+            config('services.testpoint.client_secret')
+            );
         $oidc->setRedirectURL(config('services.testpoint.redirect'));
         $oidc->authenticate();
     }
@@ -21,7 +25,7 @@ class SocialController extends Controller
      * Process user
      * @return bool|\Illuminate\Http\RedirectResponse
      */
-    public function getSocialHandle()
+    public function getSocialHandle(Request $request)
     {
         try {
             $oidc = new \OpenIDConnectClient('https://idp.testpoint.io',
@@ -44,6 +48,7 @@ class SocialController extends Controller
             dump($_SESSION);
             dump(request());
             dump(session());
+            dump($e->getMessage());
             Log::error($e->getMessage());
             Log::error($e->getFile());
             Log::error($e->getLine());
