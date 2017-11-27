@@ -47,9 +47,9 @@ use Illuminate\Support\Facades\Storage;
                     'validation_status' => $attributes['status'],
                 ];
                 if ($transaction) {
-                    if(!file_exists(resource_path('data/keys/' . $transaction->id . '_message.json'))){
+                    if(!Storage::disk('s3')->exists(config('app.env') .'/'. $transaction->id . '/' . 'message.json')){
                         $messageBody = $tapGw->getMessageBody($message['id']);
-                        file_put_contents(resource_path('data/keys/' . $transaction->id . '_message.json'), json_encode($messageBody, JSON_PRETTY_PRINT));
+                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/message.json', json_encode($messageBody, JSON_PRETTY_PRINT));
                     }
                     $transaction->update($transactionData);
                 } else {
@@ -70,7 +70,7 @@ use Illuminate\Support\Facades\Storage;
                         $tapMessage = $gpgWrapper->decryptMessage($messageBody['cyphertext'], $user->fingerprint, $user->abn);
 
                         Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/message.json', json_encode($messageBody, JSON_PRETTY_PRINT));
-                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
+                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/cyphertext_signed.gpg', (string) @$tapMessage['cyphertext']);
                         Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/initial_message.json', $message);
 
                         $transaction->encripted_payload = 'cyphertext_signed.gpg';
