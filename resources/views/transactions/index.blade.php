@@ -82,17 +82,17 @@
 
                                                             <td>
                                                                 @if($transaction->validation_status == 'sent' && file_exists(storage_path('app/' . $transaction->id . '_message.json')))
-                                                                    <a href="/download/{{ $transaction->id . '_message.json' }}" target="_blank">Download</a>
+                                                                    <a href="/download/{{ $transaction->id . '/message.json' }}" target="_blank">Download</a>
                                                                 @endif
                                                             </td>
 
                                                             <td>
                                                                 @if($transaction->encripted_payload)
-                                                                    <a href="/download/{{ $transaction->encripted_payload }}" target="_blank">Encrypted</a>
+                                                                    <a href="/download/{{ $transaction->id.'/'.$transaction->encripted_payload }}" target="_blank">Encrypted</a>
                                                                 @endif
                                                                 <br>
                                                                 @if($transaction->decripted_payload && file_exists(storage_path('app/' . $transaction->decripted_payload)))
-                                                                    <a href="/download/{{ $transaction->decripted_payload }}" target="_blank">Decrypted</a>
+                                                                    <a href="/download/{{ $transaction->id.'/'.$transaction->decripted_payload }}" target="_blank">Decrypted</a>
                                                                 @endif
                                                             </td>
                                                             <td>{{ $transaction->message_type }}</td>

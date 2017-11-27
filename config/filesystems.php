@@ -64,8 +64,8 @@ return [
             'driver' => 's3',
             'key' => env('AWS_KEY'),
             'secret' => env('AWS_SECRET'),
-            'region' => env('AWS_REGION'),
-            'bucket' => env('AWS_BUCKET'),
+            'region' => 'eu-west-1',
+            'bucket' => 'tapledger-s3-data-dev01',
         ],
 
     ],

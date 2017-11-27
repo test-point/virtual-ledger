@@ -153,7 +153,7 @@ class TransactionsController extends Controller
             'conversation_id' => $conversationId
         ]);
 
-        Storage::put($transaction->id . '_initial_message.json', $message);
+        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/initial_message.json', $message);
 
 //        //save json to file
 //        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
@@ -224,7 +224,7 @@ class TransactionsController extends Controller
             $tapMessage['signature']
         );
 
-        Storage::put($transaction->id . '_cyphertext_signed.gpg', $tapMessage['cyphertext']);
+        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
 
         $message = [
             'cyphertext' => $tapMessage['cyphertext'],
@@ -233,13 +233,13 @@ class TransactionsController extends Controller
             'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $user->abn
         ];
 
-        Storage::put($transaction->id . '_message.json', json_encode($message, JSON_PRETTY_PRINT));
+        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/message.json', json_encode($message, JSON_PRETTY_PRINT));
 
         $transaction->message_hash = $tapMessage['hash'];
         $transaction->message_id = $apiResponse['data']['id'];
         $transaction->message_type = $apiResponse['data']['type'];
-        $transaction->encripted_payload = $transaction->id . '_cyphertext_signed.gpg';
-        $transaction->decripted_payload = $transaction->id . '_initial_message.json';
+        $transaction->encripted_payload = 'cyphertext_signed.gpg';
+        $transaction->decripted_payload = 'initial_message.json';
 
         $transaction->validation_status = $apiResponse['data']['attributes']['status'];
         $transaction->save();
@@ -260,6 +260,6 @@ class TransactionsController extends Controller
      */
     public function download($filename)
     {
-        return response()->download(storage_path('app/' . $filename), $filename);
+        return redirect(Storage::disk('s3')->url(config('env') . '/' . $filename));
     }
 }
