@@ -81,7 +81,7 @@
                                                             </td>
 
                                                             <td>
-                                                                @if($transaction->validation_status == 'sent' && file_exists(storage_path('app/' . $transaction->id . '_message.json')))
+                                                                @if($transaction->validation_status == 'sent' && Storage::disk('s3')->exist(config('env') .'/'. $transaction->id . '/message.json')))
                                                                     <a href="/download/{{ $transaction->id . '/message.json' }}" target="_blank">Download</a>
                                                                 @endif
                                                             </td>

@@ -12,7 +12,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/transactions/filters', 'TransactionsController@filters');
     Route::get('/transactions/get-template', 'TransactionsController@getTemplate');
     Route::post('/transactions', 'TransactionsController@create');
-    Route::get('/download/{filename}', 'TransactionsController@download');
+    Route::get('/download/{transactionId}/{filename}', 'TransactionsController@download');
 });
 
 Route::get('/social/redirect/{provider}',   ['as' => 'social.redirect',   'uses' => 'Auth\SocialController@getSocialRedirect']);

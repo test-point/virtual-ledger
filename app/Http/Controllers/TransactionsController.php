@@ -258,8 +258,8 @@ class TransactionsController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function download($filename)
+    public function download($transactionId, $filename)
     {
-        return redirect(Storage::disk('s3')->url(config('env') . '/' . $filename));
+        return redirect(Storage::disk('s3')->url(config('env') . '/' . $transactionId . '/' . $filename));
     }
 }
