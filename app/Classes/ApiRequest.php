@@ -55,7 +55,7 @@ class ApiRequest
                 'Content-Type' => 'application/json',
             ],
             'body' => json_encode([
-                'pubKey' => \Illuminate\Support\Facades\Storage::get('keys/public_'.$senderAbn.'.key'),
+                'pubKey' => \App\User::where('abn', $senderAbn)->first()->sshKeys->public,
                 'revoked' => \Carbon\Carbon::now()->addYear()->format('Y-m-d H:i:s'),
                 'fingerprint' => $fingerprint,
             ])
@@ -102,8 +102,8 @@ class ApiRequest
             ]
         ];
         $response = $this->makeRequest('POST', $endpoint, $data, false);
-//        Storage::delete($messageFile);
-//        Storage::delete($signatureFile);
+        Storage::delete($messageFile);
+        Storage::delete($signatureFile);
         return $response;
     }
 
