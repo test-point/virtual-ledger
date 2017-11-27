@@ -153,7 +153,7 @@ class TransactionsController extends Controller
             'conversation_id' => $conversationId
         ]);
 
-        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/initial_message.json', $message);
+        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/initial_message.json', $message);
 
 //        //save json to file
 //        file_put_contents(resource_path('data/keys/' . $transaction->id . '_initial_message.json'), $message);
@@ -224,7 +224,7 @@ class TransactionsController extends Controller
             $tapMessage['signature']
         );
 
-        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
+        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
 
         $message = [
             'cyphertext' => $tapMessage['cyphertext'],
@@ -233,7 +233,7 @@ class TransactionsController extends Controller
             'sender' => "urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::" . $user->abn
         ];
 
-        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/message.json', json_encode($message, JSON_PRETTY_PRINT));
+        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/message.json', json_encode($message, JSON_PRETTY_PRINT));
 
         $transaction->message_hash = $tapMessage['hash'];
         $transaction->message_id = $apiResponse['data']['id'];
@@ -260,6 +260,15 @@ class TransactionsController extends Controller
      */
     public function download($transactionId, $filename)
     {
-        return redirect(Storage::disk('s3')->url(config('env') . '/' . $transactionId . '/' . $filename));
+        $s3 = Storage::disk('s3');
+        $client = $s3->getDriver()->getAdapter()->getClient();
+        $expiry = "+1 hour";
+
+        $command = $client->getCommand('GetObject', [
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => config('app.env') . '/' . $transactionId . '/' . $filename
+        ]);
+
+        return redirect((string)$client->createPresignedRequest($command, $expiry)->getUri());
     }
 }

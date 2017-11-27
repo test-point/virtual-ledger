@@ -69,9 +69,9 @@ use Illuminate\Support\Facades\Storage;
 
                         $tapMessage = $gpgWrapper->decryptMessage($messageBody['cyphertext'], $user->fingerprint, $user->abn);
 
-                        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/message.json', json_encode($messageBody, JSON_PRETTY_PRINT));
-                        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
-                        Storage::disk('s3')->put(config('env') . '/' . $transaction->id . '/initial_message.json', $message);
+                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/message.json', json_encode($messageBody, JSON_PRETTY_PRINT));
+                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/cyphertext_signed.gpg', $tapMessage['cyphertext']);
+                        Storage::disk('s3')->put(config('app.env') . '/' . $transaction->id . '/initial_message.json', $message);
 
                         $transaction->encripted_payload = 'cyphertext_signed.gpg';
                         $transaction->decripted_payload = 'initial_message.json';

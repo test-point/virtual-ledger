@@ -81,7 +81,7 @@
                                                             </td>
 
                                                             <td>
-                                                                @if($transaction->validation_status == 'sent' && Storage::disk('s3')->exists(config('env') .'/'. $transaction->id . '/message.json')))
+                                                                @if($transaction->validation_status == 'sent' && Storage::disk('s3')->exists(config('app.env') .'/'. $transaction->id . '/message.json'))
                                                                     <a href="/download/{{ $transaction->id . '/message.json' }}" target="_blank">Download</a>
                                                                 @endif
                                                             </td>
@@ -91,7 +91,7 @@
                                                                     <a href="/download/{{ $transaction->id.'/'.$transaction->encripted_payload }}" target="_blank">Encrypted</a>
                                                                 @endif
                                                                 <br>
-                                                                @if($transaction->decripted_payload && Storage::disk('s3')->exists(config('env') .'/'. $transaction->id . '/' . $transaction->decripted_payload)))
+                                                                @if($transaction->decripted_payload && Storage::disk('s3')->exists(config('app.env') .'/'. $transaction->id . '/' . $transaction->decripted_payload))
                                                                     <a href="/download/{{ $transaction->id.'/'.$transaction->decripted_payload }}" target="_blank">Decrypted</a>
                                                                 @endif
                                                             </td>
