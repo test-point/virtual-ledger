@@ -6,14 +6,7 @@ printenv | sed 's;^\(.[^=]*\)=\(.*\)$;export \1="\2";g' > /env
 
 cd /var/www/html
 
-touch /var/www/html/storage/logs/laravel.log
-chmod 666 /var/www/html/storage/logs/laravel.log
-
-mkdir /var/www/html/storage/app/keys
-chmod 777 /var/www/html/storage/app/keys
-
-chmod 700 .gnupg
-chmod 600 .gnupg/*
+chown -R www-data .gnupg storage
 
 [[ ! -f ".gnupg/gpg-agent.conf" ]] && echo "allow-loopback-pinentry" > .gnupg/gpg-agent.conf
 [[ ! -f ".gnupg/gpg.conf" ]] && echo "pinentry-mode loopback" > .gnupg/gpg.conf
