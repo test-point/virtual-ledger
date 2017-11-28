@@ -8,6 +8,9 @@ cd /var/www/html
 
 chown -R www-data .gnupg storage
 
+chmod 700 .gnupg
+chmod 600 .gnupg/*
+
 [[ ! -f ".gnupg/gpg-agent.conf" ]] && echo "allow-loopback-pinentry" > .gnupg/gpg-agent.conf
 [[ ! -f ".gnupg/gpg.conf" ]] && echo "pinentry-mode loopback" > .gnupg/gpg.conf
 
