@@ -35,12 +35,12 @@ use Illuminate\Support\Facades\Storage;
         $tapGw = new TapGw($gwToken['id_token']);
 
         $messages = $tapGw->getMessages();
-        dump($messages);
 
         if (!empty($messages['data'])) {
             foreach ($messages['data'] as $message) {
+                $messageBody = $tapGw->getMessageBody($message['id']);
                 $attributes = $message['attributes'];
-                $transaction = \App\Transaction::where('message_id', $message['id'])->first();
+                $transaction = \App\Transaction::where('message_hash', $messageBody['hash'])->first();
                 $transactionData = [
                     'to_party' => $user->name,
                     'notarized_message' => $attributes['doc_id'],
@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\Storage;
                 } else {
                     $transactionData['created_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
                     $transactionData['updated_at'] = \Carbon\Carbon::parse($attributes['sent_at'])->toDateTimeString();
-                    $messageBody = $tapGw->getMessageBody($message['id']);
+
 
                     if(!empty($messageBody['reference'])) {
 
