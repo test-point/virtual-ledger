@@ -102,8 +102,8 @@ class ApiRequest
             ]
         ];
         $response = $this->makeRequest('POST', $endpoint, $data, false);
-        Storage::delete($messageFile);
-        Storage::delete($signatureFile);
+//        Storage::delete($messageFile);
+//        Storage::delete($signatureFile);
         return $response;
     }
 
