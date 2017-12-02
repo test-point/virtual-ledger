@@ -38,8 +38,12 @@ use Illuminate\Support\Facades\Storage;
 
         if (!empty($messages['data'])) {
             foreach ($messages['data'] as $message) {
-                $messageBody = $tapGw->getMessageBody($message['id']);
                 $attributes = $message['attributes'];
+                if(\Carbon\Carbon::parse($attributes['created_at'])->lt(\Carbon\Carbon::now()->subMinutes(10))){
+                    continue;
+                }
+                $messageBody = $tapGw->getMessageBody($message['id']);
+
                 $transaction = \App\Transaction::where('message_hash', $messageBody['hash'])->first();
                 $transactionData = [
                     'to_party' => $user->name,
