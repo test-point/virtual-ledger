@@ -18,7 +18,8 @@ RUN pecl install oauth gnupg \
 
 RUN docker-php-ext-install pdo_mysql
 
-RUN echo "HRNGDEVICE=/dev/urandom:" >> /etc/default/rng-tools
+RUN echo "HRNGDEVICE=/dev/urandom" >> /etc/default/rng-tools
+RUN  /etc/init.d/rng-tools start
 
 RUN a2enmod rewrite
 
