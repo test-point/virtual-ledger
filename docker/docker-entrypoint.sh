@@ -3,6 +3,7 @@
 printenv | sed 's;^\(.[^=]*\)=\(.*\)$;export \1="\2";g' > /env
 
 /etc/init.d/cron start
+/etc/init.d/rng-tools start
 
 cd /var/www/html
 
