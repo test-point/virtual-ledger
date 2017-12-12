@@ -13,17 +13,9 @@ class PhpGnupgWrapper
 
     public $abn;
     public $gpg;
-    private $keyringPath;
 
     public function __construct($abn)
     {
-//        putenv('GPG_OPTIONS="--no-show-photos --pinentry-mode loopback"');
-        putenv('GPG_TTY=$(tty)');
-
-        $this->keyringPath = base_path('.gnupg');
-
-        putenv('GNUPGHOME=' . $this->keyringPath);
-
         $user = User::where('abn', $abn)->first();
         if($user) {
             //import keys
@@ -47,7 +39,7 @@ class PhpGnupgWrapper
      */
     public function generateKeys()
     {
-        $this->runConsoleCommand('gpg2 --homedir '.$this->keyringPath.' --batch -q --passphrase '.$this->abn.' --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn);
+        $this->runConsoleCommand('gpg2 --batch -q --passphrase '.$this->abn.' --quick-gen-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn);
     }
 
     /**
@@ -55,8 +47,8 @@ class PhpGnupgWrapper
      */
     public function exportKeys()
     {
-        $this->runConsoleCommand('echo ' . $this->abn . ' | gpg2  --homedir '.$this->keyringPath.' --armor --passphrase-fd 0 --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn . ' > ' . storage_path('app/keys/public_' . $this->abn . '.key'));
-        $this->runConsoleCommand('echo ' . $this->abn . ' | gpg2  --homedir '.$this->keyringPath.' --armor --passphrase-fd 0 --export-secret-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn . ' > ' . storage_path('app/keys/private_' . $this->abn . '.key'));
+        $this->runConsoleCommand('echo ' . $this->abn . ' | gpg2  --armor --passphrase-fd 0 --export urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn . ' > ' . storage_path('app/keys/public_' . $this->abn . '.key'));
+        $this->runConsoleCommand('echo ' . $this->abn . ' | gpg2  --armor --passphrase-fd 0 --export-secret-key urn:oasis:names:tc:ebcore:partyid-type:iso6523:0151::' . $this->abn . ' > ' . storage_path('app/keys/private_' . $this->abn . '.key'));
     }
 
     public function importKey($keyData)
