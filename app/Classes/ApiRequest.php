@@ -86,7 +86,6 @@ class ApiRequest
     public function sendMessage($endpoint, $message, $signature)
     {
         $messageFile = md5($message);
-        error_log('sendMessage: ' . $messageFile);
         $signatureFile = md5($signature);
         Storage::put($messageFile, $message);
         Storage::put($signatureFile, $signature);
