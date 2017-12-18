@@ -2,10 +2,10 @@
 
 namespace App\Console;
 
-use App\Transaction;
+use App\Console\Commands\LoadTransactionBody;
+use App\Console\Commands\LoadTransactions;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        LoadTransactionBody::class,
+        LoadTransactions::class
     ];
 
     /**
@@ -26,6 +27,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->command('load-messages')
+                  ->everyMinute()
+                  ->withoutOverlapping();
+         $schedule->command('transactions')
+                  ->everyMinute()
+                  ->withoutOverlapping();
     }
 
     /**
