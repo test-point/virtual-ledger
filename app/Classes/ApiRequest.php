@@ -156,10 +156,10 @@ class ApiRequest
             $res = $this->client->request($type, $url, $headers);
             return json_decode($res->getBody(), true);
         } catch (Exception $e) {
+            dd($e);
             Log::debug('Api Request error: ' . $url);
             Log::debug('Api Request error: ' . json_encode($headers));
             Log::debug('Api Request error: ' . $e->getMessage());
-            Log::debug('Api Request error: ' . json_encode($e));
         }
         return false;
     }
