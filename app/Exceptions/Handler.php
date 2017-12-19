@@ -32,7 +32,35 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        parent::report($exception);
+        // this is from the parent method
+        if ($this->shouldntReport($exception)) {
+            return;
+        }
+
+        // this is from the parent method
+        try {
+            $logger = $this->container->make(\Psr\Log\LoggerInterface::class);
+        } catch (Exception $ex) {
+            throw $exception; // throw the original exception
+        }
+
+        // this is the new custom handling of guzzle exceptions
+        if ($exception instanceof \GuzzleHttp\Exception\RequestException) {
+            // get the full text of the exception (including stack trace),
+            // and replace the original message (possibly truncated),
+            // with the full text of the entire response body.
+            $message = str_replace(
+                rtrim($exception->getMessage()),
+                (string)$exception->getResponse()->getBody(),
+                (string)$exception
+            );
+
+            // log your new custom guzzle error message
+            return $logger->error($message);
+        }
+
+        // make sure to still log non-guzzle exceptions
+        $logger->error($exception);
     }
 
     /**
