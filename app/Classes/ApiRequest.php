@@ -159,6 +159,7 @@ class ApiRequest
             Log::debug('Api Request error: ' . $url);
             Log::debug('Api Request error: ' . json_encode($headers));
             Log::debug('Api Request error: ' . $e->getMessage());
+            Log::debug('Api Request error: ' . json_encode($e));
         }
         return false;
     }
