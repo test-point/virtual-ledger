@@ -90,6 +90,9 @@ class PhpGnupgWrapper
 //        $gpg = new \gnupg();
         $gpg->setsignmode(GNUPG_SIG_MODE_DETACH);
         $signature = $gpg->sign($message);
+        if (!$signature) {
+            Log::error('Sign error: ' . $gpg->geterror());
+        }
 
         return [
             'message' => $message,
