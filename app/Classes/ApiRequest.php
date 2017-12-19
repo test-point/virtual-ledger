@@ -85,25 +85,19 @@ class ApiRequest
      */
     public function sendMessage($endpoint, $message, $signature)
     {
-        $messageFile = md5($message);
-        $signatureFile = md5($signature);
-        Storage::put($messageFile, $message);
-        Storage::put($signatureFile, $signature);
         $data = [
             'multipart' => [
                 [
                     'name' => 'signature',
-                    'contents' => fopen(storage_path('app/' . $signatureFile), 'r')
+                    'contents' => $signature
                 ],
                 [
                     'name' => 'message',
-                    'contents' => fopen(storage_path('app/' . $messageFile), 'r')
+                    'contents' => $message
                 ],
             ]
         ];
         $response = $this->makeRequest('POST', $endpoint, $data, false);
-//        Storage::delete($messageFile);
-//        Storage::delete($signatureFile);
         return $response;
     }
 
