@@ -13,9 +13,16 @@ class PhpGnupgWrapper
 
     public $abn;
     public $gpg;
+    private $keyringPath;
 
     public function __construct($abn)
     {
+        putenv('GPG_TTY=$(tty)');
+
+        $this->keyringPath = base_path('.gnupg');
+
+        putenv('GNUPGHOME=' . $this->keyringPath);
+
         $user = User::where('abn', $abn)->first();
         if($user) {
             //import keys

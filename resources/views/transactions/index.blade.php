@@ -116,8 +116,6 @@
                             </div>
                         @endforeach
                         @if(false)
-
-
                             <div class="pagination-wrapper">
                                 {{ $transactions->appends($_GET)->render() }}
                             </div>
