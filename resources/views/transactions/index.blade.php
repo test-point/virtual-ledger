@@ -22,7 +22,7 @@
 
                         @foreach($conversations as $conversation)
                             <?php
-                                $transactions = \App\Transaction::where('conversation_id', $conversation->conversation_id)->orderby('id', 'desc')->get();
+                                $transactions = \App\Transaction::where('conversation_id', $conversation->conversation_id)->orderby('updated_at', 'desc')->get();
                                 $collapsableId = md5($conversation->conversation_id);
                             ?>
                             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
