@@ -155,7 +155,7 @@
                             if($('#' + index).length) {
                                 $('#' + index).closest('.form-group').addClass('has-error');
                                 $('#' + index).closest('.form-group').append(
-                                    '<span class="error alert-danger">' + elem.join('<br>') + '</span>'
+                                    '<div class="error alert-danger">' + elem.join('<br>') + '</div>'
                                 );
                             }
                         })

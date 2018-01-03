@@ -147,6 +147,16 @@ class TransactionsController extends Controller
             return response()->json(['document' => ['You already have a conversation with this message id']], 422);
         }
 
+        $validationResponse = \MessageValidator::validate($message);
+
+        if(!empty($validationResponse['status']) && $validationResponse['status'] == 'error'){
+            return response()->json(['document' => [json_encode([
+                'message' => $validationResponse['errors'],
+                'code' => $validationResponse['code'],
+                'title' => $validationResponse['title'],
+            ], JSON_PRETTY_PRINT)]], 422);
+        }
+
         $transaction = Transaction::create([
             'from_party' => $senderAbn,
             'to_party' => $receiverAbn,
